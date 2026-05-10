@@ -19,10 +19,20 @@
       --text: #ebebeb;
       --text2: #888;
       --gold: #c9a84c;
-      --tab-h: 60px;
+      --tab-h: 48px;
       --bar-h: 52px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg2: #f5f5f5;
+      --bg3: #ebebeb;
+      --bg4: #dedede;
+      --border: #d0d0d0;
+      --text: #1a1a1a;
+      --text2: #666;
+      --gold: #9a6f20;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; }
@@ -208,13 +218,13 @@
     }
     .nav-tab {
       flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 3px;
+      align-items: center; justify-content: center; gap: 2px;
       background: none; border: none; cursor: pointer;
-      color: var(--text2); font-size: 10px; padding: 4px 0;
+      color: var(--text2); font-size: 9px; padding: 3px 0;
       transition: color .2s;
     }
     .nav-tab.on { color: var(--text); }
-    .nav-tab svg { width: 24px; height: 24px; }
+    .nav-tab svg { width: 20px; height: 20px; }
 
     /* ── MODALS (sheet from bottom) ── */
     .ov {
@@ -413,6 +423,9 @@
       <text x="2" y="17" font-size="13" fill="currentColor" stroke="none" font-family="sans-serif">A</text>
       <text x="11" y="19" font-size="16" fill="currentColor" stroke="none" font-family="sans-serif">A</text>
     </svg>
+  </button>
+  <button class="tib" onclick="toggleTheme()" id="theme-btn" title="Theme">
+    <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
   </button>
   <button class="tib" onclick="openSearch()" title="Search">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -616,6 +629,25 @@ var BOOKS = [
 ];
 var OT_END = 38; // last OT index (0-based, Malachi = index 38)
 
+var BOOKS_EN = [
+  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy",
+  "Joshua","Judges","Ruth",
+  "1 Samuel","2 Samuel","1 Kings","2 Kings",
+  "1 Chronicles","2 Chronicles",
+  "Ezra","Nehemiah","Esther","Job",
+  "Psalms","Proverbs","Ecclesiastes","Song of Songs",
+  "Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel",
+  "Hosea","Joel","Amos","Obadiah","Jonah","Micah",
+  "Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi",
+  // NT
+  "Matthew","Mark","Luke","John","Acts","Romans",
+  "1 Corinthians","2 Corinthians","Galatians","Ephesians",
+  "Philippians","Colossians","1 Thessalonians","2 Thessalonians",
+  "1 Timothy","2 Timothy","Titus","Philemon",
+  "Hebrews","James","1 Peter","2 Peter",
+  "1 John","2 John","3 John","Jude","Revelation"
+];
+
 // bolls.life translation codes
 var TRANS = [
   { code:"SYNOD", lbl:"\u0421\u0438\u043d", name:"\u0421\u0438\u043d\u043e\u0434\u0430\u043b\u044c\u043d\u044b\u0439 \u043f\u0435\u0440\u0435\u0432\u043e\u0434" },
@@ -648,6 +680,7 @@ var S = {
   tr: "SYNOD", // translation code
   fs: 21,      // font size px
   align: "justify", // text-align: left | center | justify
+  theme: "dark",    // dark | light
   sel: null,   // selected verse element
   selN: 0      // selected verse number
 };
@@ -667,6 +700,7 @@ var READ = {};  // read chapters: "bi_ch" → true
       if (typeof p.tr === "string") S.tr = p.tr;
       if (typeof p.fs === "number") S.fs = p.fs;
       if (typeof p.align === "string") S.align = p.align;
+      if (typeof p.theme === "string") S.theme = p.theme;
     }
     var hs = localStorage.getItem("bbl_hl");
     if (hs) HL = JSON.parse(hs);
@@ -682,7 +716,7 @@ var READ = {};  // read chapters: "bi_ch" → true
 // ═══════════════════════════════════════════════
 function persist() {
   try {
-    localStorage.setItem("bbl_s", JSON.stringify({bi:S.bi,ch:S.ch,tr:S.tr,fs:S.fs,align:S.align}));
+    localStorage.setItem("bbl_s", JSON.stringify({bi:S.bi,ch:S.ch,tr:S.tr,fs:S.fs,align:S.align,theme:S.theme}));
   } catch(e) {}
 }
 function persistHL() {
@@ -713,7 +747,8 @@ function setCache(tr, bi, ch, data) {
 // ═══════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════
-function bkName(i) { return BOOKS[i][0]; }
+function isEn() { return S.tr === "NIV" || S.tr === "NLT"; }
+function bkName(i) { return isEn() ? BOOKS_EN[i] : BOOKS[i][0]; }
 function bkChs(i) { return BOOKS[i][1]; }
 function hlKey(bi, ch, v) { return bi + "_" + ch + "_" + v; }
 function esc(s) {
@@ -961,9 +996,9 @@ function renderBookList(filter) {
     var name = BOOKS[i][0];
     if (fl && name.toLowerCase().indexOf(fl) === -1) continue;
     if (!fl) {
-      if (i === 0) html += '<div class="test-lbl">\u0412\u0435\u0442\u0445\u0438\u0439 \u0417\u0430\u0432\u0435\u0442</div>';
+      if (i === 0) html += '<div class="test-lbl">' + (isEn() ? "Old Testament" : "\u0412\u0435\u0442\u0445\u0438\u0439 \u0417\u0430\u0432\u0435\u0442") + '</div>';
       if (i === OT_END + 1 && !addedNT) {
-        html += '<div class="test-lbl">\u041d\u043e\u0432\u044b\u0439 \u0417\u0430\u0432\u0435\u0442</div>';
+        html += '<div class="test-lbl">' + (isEn() ? "New Testament" : "\u041d\u043e\u0432\u044b\u0439 \u0417\u0430\u0432\u0435\u0442") + '</div>';
         addedNT = true;
       }
     }
@@ -1430,9 +1465,36 @@ function showTab(name) {
 })();
 
 // ═══════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════
+function applyTheme(t) {
+  S.theme = t;
+  if (t === "light") {
+    document.documentElement.setAttribute("data-theme","light");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+  var icon = document.getElementById("theme-icon");
+  if (icon) {
+    if (t === "light") {
+      // Sun icon
+      icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+    } else {
+      // Moon icon
+      icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    }
+  }
+  persist();
+}
+function toggleTheme() {
+  applyTheme(S.theme === "dark" ? "light" : "dark");
+}
+
+// ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 document.getElementById("font-range").value = S.fs;
+applyTheme(S.theme);
 setAlign(S.align);
 loadChapter();
 </script>
