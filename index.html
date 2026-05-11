@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Библия">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#000000" id="theme-color-meta">
   <title>Библия</title>
   <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
@@ -42,9 +42,24 @@
       position: fixed; top: 0; left: 0; right: 0;
       height: calc(var(--bar-h) + var(--safe-top));
       padding-top: var(--safe-top);
-      background: var(--bg); border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.72);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      backdrop-filter: blur(18px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       display: flex; align-items: center; padding-left: 10px; padding-right: 6px;
       z-index: 100; gap: 6px;
+      transform: translateY(0);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    #top-bar.bar-hidden { transform: translateY(-100%); }
+    [data-theme="light"] #top-bar {
+      background: rgba(255,255,255,0.78);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    #ch-progress {
+      position: absolute; bottom: -1px; left: 0;
+      height: 2px; background: var(--gold); width: 0;
+      transition: width .15s linear; pointer-events: none;
     }
     #bk-btn {
       flex: 1; min-width: 0;
@@ -69,49 +84,23 @@
     }
     .tib svg { width: 22px; height: 22px; }
 
-    /* ── TOP BAR ── */
-    #top-bar {
-      position: fixed; top: 0; left: 0; right: 0;
-      height: calc(var(--bar-h) + var(--safe-top));
-      padding-top: var(--safe-top);
-      background: rgba(0,0,0,0.72);
-      -webkit-backdrop-filter: blur(18px) saturate(180%);
-      backdrop-filter: blur(18px) saturate(180%);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      display: flex; align-items: center; padding-left: 10px; padding-right: 6px;
-      z-index: 100; gap: 6px;
-      transform: translateY(0);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-    #top-bar.bar-hidden { transform: translateY(-100%); }
-    [data-theme="light"] #top-bar {
-      background: rgba(255,255,255,0.78);
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-    }
-
     /* ── SCREENS ── */
     .screen {
       position: fixed;
       top: calc(var(--bar-h) + var(--safe-top));
-      bottom: calc(var(--tab-h) + var(--safe-bot));
+      bottom: 0;
       left: 0; right: 0;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
       display: none;
-      transition: top 0.3s cubic-bezier(0.4,0,0.2,1),
-                  bottom 0.3s cubic-bezier(0.4,0,0.2,1);
+      transition: top 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     .screen.active { display: block; }
     .screen.bar-hidden { top: var(--safe-top); }
-    .screen.nav-hidden { bottom: var(--safe-bot); }
-
-    /* ── BOTTOM NAV hide ── */
-    #bot-nav {
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-    #bot-nav.nav-hidden { transform: translateY(100%); }
+    .screen.font-shift { top: calc(var(--bar-h) + var(--safe-top) + 96px); }
+    .screen.font-shift.bar-hidden { top: var(--safe-top); }
 
     /* ── READER SCREEN ── */
-    #screen-bible { padding: 20px 20px 32px; }
+    #screen-bible { padding: 20px 20px calc(var(--tab-h) + var(--safe-bot) + 30px); }
     #loading-msg {
       display: none; text-align: center;
       padding: 80px 20px; color: var(--text2); font-size: 15px;
@@ -124,8 +113,9 @@
       font-family: 'PT Serif', Georgia, serif;
       font-size: 21px; line-height: 1.85;
       color: var(--text); text-align: justify;
+      --pg-space: 0px;
     }
-    .verse { display: inline; border-radius: 3px; }
+    .verse { display: inline; border-radius: 3px; margin-right: var(--pg-space); }
     .verse sup {
       color: var(--gold); font-size: 11px; font-weight: 700;
       font-family: -apple-system, sans-serif;
@@ -137,6 +127,11 @@
     .hl-b { background: rgba(50,160,255,0.28); }
     .hl-r { background: rgba(255,80,80,0.28); }
     .hl-p { background: rgba(190,80,255,0.28); }
+    [data-theme="light"] .verse.sel { background: rgba(154,111,32,0.20); }
+    [data-theme="light"] .hl-y { background: rgba(230,180,0,0.45); }
+    [data-theme="light"] .hl-b { background: rgba(50,140,230,0.30); }
+    [data-theme="light"] .hl-r { background: rgba(230,60,60,0.28); }
+    [data-theme="light"] .hl-p { background: rgba(160,60,220,0.28); }
 
     /* ch nav arrows */
     #ch-nav {
@@ -158,9 +153,11 @@
       display: none; position: fixed;
       top: calc(var(--bar-h) + var(--safe-top));
       left: 0; right: 0;
+      max-height: calc(100vh - var(--bar-h) - var(--safe-top) - var(--tab-h) - var(--safe-bot) - 20px);
       background: var(--bg2); border-bottom: 1px solid var(--border);
       padding: 10px 20px 12px; z-index: 90;
       flex-direction: column; gap: 10px;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
     #font-bar.open { display: flex; }
     #font-size-row { display: flex; align-items: center; gap: 12px; }
@@ -171,7 +168,7 @@
       font-size: 20px; cursor: pointer; padding: 0 4px;
     }
     #align-row {
-      display: flex; gap: 8px; padding-top: 2px;
+      display: flex; gap: 8px;
       border-top: 1px solid var(--border);
       padding-top: 10px;
     }
@@ -184,6 +181,36 @@
     }
     .al-btn.on { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.1); }
     .al-btn svg { width: 18px; height: 18px; }
+    /* advanced settings */
+    #adv-toggle {
+      background: none; border: none;
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 8px 0; cursor: pointer;
+      color: var(--text2); font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+    #adv-toggle svg { width: 14px; height: 14px; transition: transform .2s; }
+    #adv-toggle.open svg { transform: rotate(180deg); }
+    #adv-rows {
+      display: none; flex-direction: column; gap: 12px;
+      padding-top: 6px; border-top: 1px solid var(--border);
+    }
+    #adv-rows.open { display: flex; }
+    .adv-row { display: flex; align-items: center; gap: 12px; }
+    .adv-lbl {
+      font-size: 12px; color: var(--text2);
+      min-width: 92px; flex-shrink: 0;
+    }
+    .adv-val {
+      font-size: 12px; color: var(--text); font-weight: 600;
+      min-width: 40px; text-align: right;
+    }
+    .adv-row input[type="range"] { flex: 1; accent-color: var(--gold); }
+    .adv-reset {
+      background: var(--bg3); border: none; border-radius: 8px;
+      padding: 7px 14px; color: var(--text2); font-size: 12px;
+      cursor: pointer; margin-top: 4px; align-self: center;
+    }
 
     /* ── PLACEHOLDER SCREENS ── */
     .placeholder {
@@ -196,7 +223,7 @@
     .placeholder p { font-size: 16px; }
 
     /* ── SEARCH SCREEN ── */
-    #screen-search { padding: 16px; }
+    #screen-search { padding: 16px 16px calc(var(--tab-h) + var(--safe-bot) + 30px); }
     #search-wrap {
       display: flex; gap: 10px; align-items: center;
       margin-bottom: 16px;
@@ -223,7 +250,7 @@
     #search-hint { color: var(--text2); font-size: 14px; text-align: center; padding: 40px 20px; }
 
     /* ── SAVED SCREEN ── */
-    #screen-saved { padding: 16px; }
+    #screen-saved { padding: 16px 16px calc(var(--tab-h) + var(--safe-bot) + 30px); }
     .saved-item {
       background: var(--bg3); border-radius: 10px;
       padding: 12px 14px; margin-bottom: 10px;
@@ -240,11 +267,28 @@
 
     /* ── BOTTOM NAV ── */
     #bot-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: calc(var(--tab-h) + var(--safe-bot));
-      padding-bottom: var(--safe-bot);
-      background: var(--bg); border-top: 1px solid var(--border);
+      position: fixed;
+      bottom: calc(var(--safe-bot) + 10px);
+      left: 12px; right: 12px;
+      height: var(--tab-h);
+      background: rgba(28,28,28,0.78);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
       display: flex; z-index: 100;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1),
+                  opacity 0.3s ease;
+    }
+    [data-theme="light"] #bot-nav {
+      background: rgba(245,245,245,0.85);
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    }
+    #bot-nav.nav-hidden {
+      transform: translateY(calc(100% + 20px));
+      opacity: 0;
     }
     .nav-tab {
       flex: 1; display: flex; flex-direction: column;
@@ -252,6 +296,7 @@
       background: none; border: none; cursor: pointer;
       color: var(--text2); font-size: 9px; padding: 3px 0;
       transition: color .2s;
+      border-radius: 999px;
     }
     .nav-tab.on { color: var(--text); }
     .nav-tab svg { width: 20px; height: 20px; }
@@ -259,9 +304,10 @@
     /* ── MODALS (sheet from bottom) ── */
     .ov {
       display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.75); z-index: 200;
+      background: rgba(0,0,0,.65); z-index: 200;
       flex-direction: column; justify-content: flex-end;
     }
+    [data-theme="light"] .ov { background: rgba(0,0,0,.35); }
     .ov.open { display: flex; }
     .sheet {
       background: var(--bg2); border-radius: 18px 18px 0 0;
@@ -367,7 +413,7 @@
       width: 36px; height: 36px; border-radius: 50%; border: none;
       cursor: pointer; transition: box-shadow .15s;
     }
-    .hd.on { box-shadow: 0 0 0 3px var(--bg2), 0 0 0 5px #fff; }
+    .hd.on { box-shadow: 0 0 0 3px var(--bg2), 0 0 0 5px var(--text); }
     .hl-clr {
       margin-left: auto; background: var(--bg4); border: none;
       border-radius: 20px; padding: 6px 14px;
@@ -426,7 +472,7 @@
     }
 
     /* ── STATS SCREEN ── */
-    #screen-stats { padding: 0 0 24px; }
+    #screen-stats { padding: 0 0 calc(var(--tab-h) + var(--safe-bot) + 30px); }
     .st-summary {
       display: flex; gap: 0;
       margin: 14px 16px 0;
@@ -471,9 +517,9 @@
     .cal-day.empty { background: transparent; cursor: default; }
     .cal-day.today { box-shadow: 0 0 0 2px var(--gold); }
     .cal-day.rd0 { background: var(--bg3); }
-    .cal-day.rd1 { background: rgba(201,168,76,0.22); }
-    .cal-day.rd2 { background: rgba(201,168,76,0.45); }
-    .cal-day.rd3 { background: rgba(201,168,76,0.72); }
+    .cal-day.rd1 { background: color-mix(in srgb, var(--gold) 22%, var(--bg3)); }
+    .cal-day.rd2 { background: color-mix(in srgb, var(--gold) 50%, var(--bg3)); }
+    .cal-day.rd3 { background: color-mix(in srgb, var(--gold) 80%, var(--bg3)); }
     .cal-day.rd4 { background: var(--gold); }
     .cal-day-num {
       font-size: 13px; font-weight: 500; color: var(--text);
@@ -531,7 +577,7 @@
     #dd-empty { color: var(--text2); text-align: center; padding: 30px; font-size: 15px; }
     #toast {
       position: fixed;
-      bottom: calc(var(--tab-h) + var(--safe-bot) + 14px);
+      bottom: calc(var(--tab-h) + var(--safe-bot) + 30px);
       left: 50%; transform: translateX(-50%) translateY(10px);
       background: var(--bg4); color: var(--text);
       padding: 9px 20px; border-radius: 20px; font-size: 14px;
@@ -563,6 +609,7 @@
   <button class="tib" onclick="openSearch()" title="Search">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
   </button>
+  <div id="ch-progress"></div>
 </div>
 
 <!-- FONT BAR -->
@@ -585,6 +632,33 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       По ширине
     </button>
+  </div>
+  <button id="adv-toggle" onclick="toggleAdv()">
+    <span>Расширенные настройки</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
+  </button>
+  <div id="adv-rows">
+    <div class="adv-row">
+      <span class="adv-lbl">Межстрочный</span>
+      <input type="range" id="adv-lh" min="120" max="240" step="5" oninput="setAdv('lh',this.value)">
+      <span class="adv-val" id="adv-lh-val">185%</span>
+    </div>
+    <div class="adv-row">
+      <span class="adv-lbl">Межбуквенный</span>
+      <input type="range" id="adv-ls" min="-2" max="6" step="0.5" oninput="setAdv('ls',this.value)">
+      <span class="adv-val" id="adv-ls-val">0</span>
+    </div>
+    <div class="adv-row">
+      <span class="adv-lbl">Поля по бокам</span>
+      <input type="range" id="adv-mh" min="8" max="48" step="2" oninput="setAdv('mh',this.value)">
+      <span class="adv-val" id="adv-mh-val">20px</span>
+    </div>
+    <div class="adv-row">
+      <span class="adv-lbl">Отступ абзаца</span>
+      <input type="range" id="adv-pg" min="0" max="20" step="1" oninput="setAdv('pg',this.value)">
+      <span class="adv-val" id="adv-pg-val">0</span>
+    </div>
+    <button class="adv-reset" onclick="resetAdv()">Сбросить настройки</button>
   </div>
 </div>
 
@@ -734,7 +808,7 @@
 </div>
 
 <!-- Geneva notes modal -->
-<div id="gn-ov" onclick="closeGN()">
+<div id="gn-ov" onclick="if(event.target===this)closeGN()">
   <div id="gn-sheet" onclick="event.stopPropagation()">
     <div id="gn-hdr">
       <span id="gn-title"></span>
@@ -848,6 +922,10 @@ var S = {
   fs: 21,      // font size px
   align: "justify", // text-align: left | center | justify
   theme: "dark",    // dark | light
+  lh: 185,          // line-height %
+  ls: 0,            // letter-spacing px (allow .5 step)
+  mh: 20,           // horizontal margin px
+  pg: 0,            // paragraph spacing (extra px between verses)
   sel: null,   // selected verse element
   selN: 0      // selected verse number
 };
@@ -869,6 +947,10 @@ var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
       if (typeof p.fs === "number") S.fs = p.fs;
       if (typeof p.align === "string") S.align = p.align;
       if (typeof p.theme === "string") S.theme = p.theme;
+      if (typeof p.lh === "number") S.lh = p.lh;
+      if (typeof p.ls === "number") S.ls = p.ls;
+      if (typeof p.mh === "number") S.mh = p.mh;
+      if (typeof p.pg === "number") S.pg = p.pg;
     }
     var hs = localStorage.getItem("bbl_hl");
     if (hs) HL = JSON.parse(hs);
@@ -886,7 +968,7 @@ var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
 // ═══════════════════════════════════════════════
 function persist() {
   try {
-    localStorage.setItem("bbl_s", JSON.stringify({bi:S.bi,ch:S.ch,tr:S.tr,fs:S.fs,align:S.align,theme:S.theme}));
+    localStorage.setItem("bbl_s", JSON.stringify({bi:S.bi,ch:S.ch,tr:S.tr,fs:S.fs,align:S.align,theme:S.theme,lh:S.lh,ls:S.ls,mh:S.mh,pg:S.pg}));
   } catch(e) {}
 }
 function persistHL() {
@@ -984,7 +1066,7 @@ async function loadChapter() {
   // reset bar visibility on chapter change
   document.getElementById("top-bar").classList.remove("bar-hidden");
   document.getElementById("bot-nav").classList.remove("nav-hidden");
-  document.getElementById("screen-bible").classList.remove("bar-hidden","nav-hidden");
+  document.getElementById("screen-bible").classList.remove("bar-hidden");
 
   var ct = document.getElementById("ch-text");
   var lm = document.getElementById("loading-msg");
@@ -1032,11 +1114,16 @@ function renderVerses(verses) {
   var ct = document.getElementById("ch-text");
   ct.style.fontSize = S.fs + "px";
   ct.style.textAlign = S.align;
+  applyTypography();
   var html = "";
   for (var i = 0; i < verses.length; i++) {
     var v = verses[i];
     var vn = v.verse;
-    var txt = (v.text || "").replace(/\s+/g, " ").trim();
+    var txt = (v.text || "")
+      .replace(/<br\s*\/?>/gi, " ")
+      .replace(/<\/?[a-z][^>]*>/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
     var hk = hlKey(S.bi, S.ch, vn);
     var hlCls = HL[hk] ? " hl-" + HL[hk] : "";
     html += '<span class="verse' + hlCls + '" data-v="' + vn + '">' +
@@ -1098,6 +1185,12 @@ function goNext() {
     var remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
     if (remaining <= 60) markRead(S.bi, S.ch);
 
+    // update chapter progress bar
+    var max = el.scrollHeight - el.clientHeight;
+    var pct = max > 0 ? Math.min(100, (el.scrollTop / max) * 100) : 0;
+    var pb = document.getElementById("ch-progress");
+    if (pb) pb.style.width = pct + "%";
+
     // hide/show bars
     if (!ticking) {
       ticking = true;
@@ -1110,13 +1203,11 @@ function goNext() {
             topBar.classList.add("bar-hidden");
             botNav.classList.add("nav-hidden");
             el.classList.add("bar-hidden");
-            el.classList.add("nav-hidden");
           } else {
             // scrolling UP — show
             topBar.classList.remove("bar-hidden");
             botNav.classList.remove("nav-hidden");
             el.classList.remove("bar-hidden");
-            el.classList.remove("nav-hidden");
           }
           lastY = y;
         }
@@ -1143,20 +1234,89 @@ function setAlign(a) {
   }
   persist();
 }
+
+function applyTypography() {
+  var ct = document.getElementById("ch-text");
+  if (!ct) return;
+  ct.style.lineHeight = (S.lh / 100).toFixed(2);
+  ct.style.letterSpacing = S.ls + "px";
+  // paragraph spacing applied via margin-right on verse span
+  // We add extra spaces and a CSS variable
+  ct.style.setProperty("--pg-space", S.pg + "px");
+  // horizontal margin -> set on screen-bible padding
+  var bs = document.getElementById("screen-bible");
+  if (bs) {
+    bs.style.paddingLeft = S.mh + "px";
+    bs.style.paddingRight = S.mh + "px";
+  }
+}
+
+function setAdv(key, val) {
+  var v = parseFloat(val);
+  if (key === "lh") {
+    S.lh = v;
+    document.getElementById("adv-lh-val").textContent = v + "%";
+  } else if (key === "ls") {
+    S.ls = v;
+    document.getElementById("adv-ls-val").textContent = (v > 0 ? "+" : "") + v;
+  } else if (key === "mh") {
+    S.mh = v;
+    document.getElementById("adv-mh-val").textContent = v + "px";
+  } else if (key === "pg") {
+    S.pg = v;
+    document.getElementById("adv-pg-val").textContent = v + "px";
+  }
+  applyTypography();
+  persist();
+}
+
+function toggleAdv() {
+  var btn = document.getElementById("adv-toggle");
+  var rows = document.getElementById("adv-rows");
+  var open = !btn.classList.contains("open");
+  btn.classList.toggle("open", open);
+  rows.classList.toggle("open", open);
+  // Refresh slider values when opening
+  if (open) {
+    document.getElementById("adv-lh").value = S.lh;
+    document.getElementById("adv-lh-val").textContent = S.lh + "%";
+    document.getElementById("adv-ls").value = S.ls;
+    document.getElementById("adv-ls-val").textContent = (S.ls > 0 ? "+" : "") + S.ls;
+    document.getElementById("adv-mh").value = S.mh;
+    document.getElementById("adv-mh-val").textContent = S.mh + "px";
+    document.getElementById("adv-pg").value = S.pg;
+    document.getElementById("adv-pg-val").textContent = S.pg + "px";
+  }
+}
+
+function resetAdv() {
+  S.lh = 185; S.ls = 0; S.mh = 20; S.pg = 0;
+  applyTypography();
+  persist();
+  // refresh sliders
+  document.getElementById("adv-lh").value = 185;
+  document.getElementById("adv-lh-val").textContent = "185%";
+  document.getElementById("adv-ls").value = 0;
+  document.getElementById("adv-ls-val").textContent = "0";
+  document.getElementById("adv-mh").value = 20;
+  document.getElementById("adv-mh-val").textContent = "20px";
+  document.getElementById("adv-pg").value = 0;
+  document.getElementById("adv-pg-val").textContent = "0px";
+}
 var _fontOpen = false;
 function toggleFontBar() {
   _fontOpen = !_fontOpen;
   var fb = document.getElementById("font-bar");
+  var bs = document.getElementById("screen-bible");
   if (_fontOpen) {
     fb.classList.add("open");
     document.getElementById("font-range").value = S.fs;
     document.getElementById("font-lbl").textContent = S.fs + "px";
-    setAlign(S.align); // refresh button states
-    var bs = document.getElementById("screen-bible");
-    bs.style.top = "calc(var(--bar-h) + var(--safe-top) + 96px)";
+    setAlign(S.align);
+    bs.classList.add("font-shift");
   } else {
     fb.classList.remove("open");
-    document.getElementById("screen-bible").style.top = "";
+    bs.classList.remove("font-shift");
   }
 }
 
@@ -1193,7 +1353,6 @@ function progressRingSVG(pct, done) {
   var r = 14; var cx = 19; var cy = 19;
   var circ = 2 * 3.14159 * r;
   var offset = circ * (1 - pct / 100);
-  var fillColor = done ? "var(--gold)" : "var(--gold)";
   var lbl = done ? "&#x2713;" : (pct + "%");
   var lblCls = done ? " done" : "";
   return '<div class="bk-ring">' +
@@ -1214,7 +1373,9 @@ function renderBookList(filter) {
   var addedNT = false;
   for (var i = 0; i < BOOKS.length; i++) {
     var name = BOOKS[i][0];
-    if (fl && name.toLowerCase().indexOf(fl) === -1) continue;
+    var nameEn = BOOKS_EN[i];
+    if (fl && name.toLowerCase().indexOf(fl) === -1 &&
+        nameEn.toLowerCase().indexOf(fl) === -1) continue;
     if (!fl) {
       if (i === 0) html += '<div class="test-lbl">' + (isEn() ? "Old Testament" : "\u0412\u0435\u0442\u0445\u0438\u0439 \u0417\u0430\u0432\u0435\u0442") + '</div>';
       if (i === OT_END + 1 && !addedNT) {
@@ -1225,9 +1386,11 @@ function renderBookList(filter) {
     var cur = i === S.bi ? " cur" : "";
     var prog = bookProgress(i);
     var pct = prog.total > 0 ? Math.round(prog.done * 100 / prog.total) : 0;
-    var ringHtml = progressRingSVG(pct, pct === 100);
+    var isDone = prog.total > 0 && prog.done >= prog.total;
+    var ringHtml = progressRingSVG(pct, isDone);
+    var dispName = bkName(i);
     html += '<button class="bk-item' + cur + '" onclick="pickBook(' + i + ')">' +
-            '<span class="bk-name">' + name + '</span>' +
+            '<span class="bk-name">' + dispName + '</span>' +
             '<span class="bk-chs">' + prog.total + '</span>' +
             ringHtml +
             '</button>';
@@ -1314,10 +1477,10 @@ function selectVerse(el) {
     var btn = document.getElementById("hd-" + cols[i]);
     if (btn) btn.classList.toggle("on", HL[hk] === cols[i]);
   }
-  // show commentary button if note exists (or notes still loading)
+  // show commentary button only when notes loaded and exist for this verse
   var gnBtn = document.getElementById("va-gn-btn");
   if (gnBtn) {
-    var hasNote = !_gLoaded || (_gNotes[vn] && _gNotes[vn].length > 0);
+    var hasNote = _gLoaded && _gNotes[vn] && _gNotes[vn].length > 0;
     gnBtn.style.display = hasNote ? "" : "none";
   }
   document.getElementById("va-ov").classList.add("open");
@@ -1359,7 +1522,11 @@ function clrHL() {
 }
 function getVerseText() {
   if (!S.sel) return "";
-  return (S.sel.textContent || "").trim();
+  // textContent includes the verse number from <sup>, remove it
+  var clone = S.sel.cloneNode(true);
+  var sups = clone.querySelectorAll("sup");
+  for (var i = 0; i < sups.length; i++) sups[i].remove();
+  return (clone.textContent || "").trim();
 }
 function getVerseRef() {
   return bkName(S.bi) + " " + S.ch + ":" + S.selN;
@@ -1380,7 +1547,9 @@ function copyVerse() {
 function shareVerse() {
   var txt = getVerseText() + " \u2014 " + getVerseRef();
   if (navigator.share) {
-    navigator.share({ text: txt });
+    navigator.share({ text: txt }).catch(function() {
+      // user cancelled or error - silent
+    });
   } else {
     copyVerse(); return;
   }
@@ -1515,26 +1684,35 @@ document.getElementById("search-input").addEventListener("keydown", function(e) 
 // GENEVA NOTES
 // ═══════════════════════════════════════════════
 function genevaKey(bi, ch) { return "gbbl_" + bi + "_" + ch; }
+var _gToken = 0;
 
 async function loadGenevaNotes(bi, ch) {
   if (_gBi === bi && _gCh === ch && _gLoaded) return;
   _gNotes = {}; _gLoaded = false; _gBi = bi; _gCh = ch;
+  var myToken = ++_gToken;
 
   // cache first
   try {
     var c = localStorage.getItem(genevaKey(bi, ch));
-    if (c) { _gNotes = JSON.parse(c); _gLoaded = true; return; }
+    if (c) {
+      _gNotes = JSON.parse(c); _gLoaded = true;
+      refreshGenevaButton();
+      return;
+    }
   } catch(e) {}
 
   var bbyNum = BBY_MAP[bi];
-  if (!bbyNum) return;
+  if (!bbyNum) { _gLoaded = true; refreshGenevaButton(); return; }
   var rawUrl = "https://bible.by/geneva-bible/" + bbyNum + "/" + ch + "/";
   var proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rawUrl);
 
   try {
     var resp = await fetch(proxyUrl);
+    // discard if user moved to another chapter
+    if (myToken !== _gToken) return;
     if (!resp.ok) throw new Error("proxy " + resp.status);
     var html = await resp.text();
+    if (myToken !== _gToken) return;
 
     var parser = new DOMParser();
     var doc = parser.parseFromString(html, "text/html");
@@ -1579,9 +1757,21 @@ async function loadGenevaNotes(bi, ch) {
     _gNotes = notes;
     _gLoaded = true;
     try { localStorage.setItem(genevaKey(bi, ch), JSON.stringify(notes)); } catch(e2) {}
+    refreshGenevaButton();
   } catch(err) {
+    _gLoaded = true; // give up; mark as loaded so button doesn't keep showing
     console.error("Geneva:", err);
+    refreshGenevaButton();
   }
+}
+
+function refreshGenevaButton() {
+  // if verse action sheet is open, update commentary button visibility
+  if (!S.sel) return;
+  var gnBtn = document.getElementById("va-gn-btn");
+  if (!gnBtn) return;
+  var hasNote = _gNotes[S.selN] && _gNotes[S.selN].length > 0;
+  gnBtn.style.display = hasNote ? "" : "none";
 }
 
 function buildNoteHTML(p) {
@@ -1607,24 +1797,8 @@ function openGenevaNote() {
   var ref = bkName(S.bi) + " " + S.ch + ":" + vn;
   document.getElementById("gn-title").textContent = ref;
   document.getElementById("gn-ov").classList.add("open");
-
-  var body = document.getElementById("gn-body");
-  var loading = document.getElementById("gn-loading");
-
-  if (!_gLoaded) {
-    body.innerHTML = '<div id="gn-loading">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</div>';
-    // poll until loaded
-    var attempts = 0;
-    var poll = setInterval(function() {
-      attempts++;
-      if (_gLoaded || attempts > 30) {
-        clearInterval(poll);
-        renderGenevaNote(vn);
-      }
-    }, 300);
-  } else {
-    renderGenevaNote(vn);
-  }
+  document.body.classList.add("modal-open");
+  renderGenevaNote(vn);
   closeVA();
 }
 
@@ -1644,6 +1818,7 @@ function renderGenevaNote(vn) {
 
 function closeGN() {
   document.getElementById("gn-ov").classList.remove("open");
+  document.body.classList.remove("modal-open");
 }
 
 // ═══════════════════════════════════════════════
@@ -1701,10 +1876,14 @@ function calcTotalChapters() {
 }
 
 function renderStats() {
-  if (!_statMonth) {
-    _statMonth = new Date();
-    _statMonth.setDate(1);
-  }
+  // Always reset to current month on tab visit
+  _statMonth = new Date();
+  _statMonth.setDate(1);
+  _statMonth.setHours(0,0,0,0);
+  doRenderStats();
+}
+
+function doRenderStats() {
   // Summary
   var streak = calcStreak();
   var totalDays = calcTotalDays();
@@ -1763,7 +1942,7 @@ function renderStats() {
 
 function statsMonthNav(dir) {
   _statMonth.setMonth(_statMonth.getMonth() + dir);
-  renderStats();
+  doRenderStats();
 }
 
 function openDayDetail(ds) {
@@ -1779,7 +1958,7 @@ function openDayDetail(ds) {
       var bi2 = parseInt(parts[0], 10);
       var ch2 = parseInt(parts[1], 10);
       html += '<div class="dd-item" onclick="goFromDay(' + bi2 + ',' + ch2 + ')">' +
-              '<div><div class="dd-bk">' + esc(BOOKS[bi2][0]) + '</div>' +
+              '<div><div class="dd-bk">' + esc(bkName(bi2)) + '</div>' +
               '<div class="dd-ch">\u0413\u043b\u0430\u0432\u0430 ' + ch2 + '</div></div>' +
               '<span class="dd-go">\u2192</span>' +
               '</div>';
@@ -1849,6 +2028,14 @@ function showTab(name) {
   } catch(e) {}
 })();
 
+// ── Tap top bar empty area → scroll to top of chapter ──
+document.getElementById("top-bar").addEventListener("dblclick", function(e) {
+  // ignore clicks on buttons
+  if (e.target.closest("button")) return;
+  var el = document.getElementById("screen-bible");
+  el.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 // ═══════════════════════════════════════════════
 // THEME
 // ═══════════════════════════════════════════════
@@ -1859,13 +2046,14 @@ function applyTheme(t) {
   } else {
     document.documentElement.removeAttribute("data-theme");
   }
+  // update status bar color
+  var tc = document.getElementById("theme-color-meta");
+  if (tc) tc.setAttribute("content", t === "light" ? "#ffffff" : "#000000");
   var icon = document.getElementById("theme-icon");
   if (icon) {
     if (t === "light") {
-      // Sun icon
       icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
     } else {
-      // Moon icon
       icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
     }
   }
@@ -1881,6 +2069,7 @@ function toggleTheme() {
 document.getElementById("font-range").value = S.fs;
 applyTheme(S.theme);
 setAlign(S.align);
+applyTypography();
 loadChapter();
 </script>
 </body>
