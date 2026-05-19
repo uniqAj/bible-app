@@ -122,26 +122,34 @@
       vertical-align: super; line-height: 0;
       margin-right: 1px; margin-left: 3px;
     }
-    /* ── VERSE SELECTION + HIGHLIGHT UNDERLINE SYSTEM ── */
+    /* ── VERSE SELECTION + HIGHLIGHT SYSTEM ── */
     .verse.sel {
-      text-decoration-line: underline;
-      text-decoration-color: var(--gold);
-      text-decoration-thickness: 3px;
-      background: rgba(201,168,76,0.14);
+      background: rgba(201,168,76,0.35);
+      border-radius: 3px;
     }
     .hld {
-      text-decoration-line: underline;
-      text-decoration-color: var(--hl-c, #FFD700);
-      text-decoration-thickness: 3px;
+      border-radius: 3px;
+      /* background set via inline style with full opacity */
     }
-    .verse.sel.hld { text-decoration-color: var(--hl-c, var(--gold)); }
 
     /* ── VERSE ACTION SHEET ── */
     #va-ov {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.5); z-index: 300;
+      display: none; position: fixed;
+      /* Only cover top bar area, not the text - pointer-events off */
+      inset: 0;
+      background: transparent;
+      z-index: 300;
+      pointer-events: none;
     }
     #va-ov.open { display: block; }
+    /* Close button area above the sheet */
+    #va-backdrop {
+      position: absolute; inset: 0;
+      bottom: auto;
+      height: calc(100% - 280px); /* above the sheet */
+      pointer-events: all;
+      cursor: default;
+    }
     #va {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: var(--bg2); border-radius: 18px 18px 0 0;
@@ -868,7 +876,9 @@
 </div>
 
 <!-- Verse actions -->
-<div id="va-ov" onclick="closeVA()"></div>
+<div id="va-ov">
+  <div id="va-backdrop" onclick="closeVA()"></div>
+</div>
 <div id="va">
   <div class="handle"></div>
   <div id="va-ref-row">
@@ -1292,7 +1302,7 @@ function renderVerses(verses) {
     var hk = hlKey(S.bi, S.ch, vn);
     var hlColor = HL[hk];
     var hlCls = hlColor ? " hld" : "";
-    var hlStyle = hlColor ? ' style="--hl-c:' + hlColor + ';background:' + hexToRgba(hlColor, 0.15) + '"' : '';
+    var hlStyle = hlColor ? ' style="background:' + hexToRgba(hlColor, 0.42) + '"' : '';
     html += '<span class="verse' + hlCls + '" data-v="' + vn + '"' + hlStyle + '>' +
             '<sup>' + vn + '</sup>' + esc(txt) + ' </span>';
   }
@@ -1714,12 +1724,10 @@ function closeVA() {
 }
 
 function applyHLStyle(el, hex) {
-  el.style.setProperty("--hl-c", hex);
-  el.style.backgroundColor = hexToRgba(hex, 0.15);
+  el.style.backgroundColor = hexToRgba(hex, 0.42);
   el.classList.add("hld");
 }
 function removeHLStyle(el) {
-  el.style.removeProperty("--hl-c");
   el.style.backgroundColor = "";
   el.classList.remove("hld");
 }
@@ -2399,7 +2407,10 @@ function renderRecentChapters() {
   } catch(e) {}
 })();
 
-// ── Swipe-to-dismiss for bottom sheets ──
+// ── Tap on ch-text background (not a verse) closes VA ──
+document.getElementById("ch-text").addEventListener("click", function(e) {
+  if (_vaOpen && e.target === this) closeVA();
+});
 (function() {
   var SHEETS = [
     { ovId: "ov-book",  closeId: "ov-book"  },
