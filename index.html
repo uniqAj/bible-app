@@ -122,18 +122,125 @@
       vertical-align: super; line-height: 0;
       margin-right: 1px; margin-left: 3px;
     }
-    .verse.sel { background: rgba(201,168,76,0.18); }
-    .hl-y { background: rgba(255,215,0,0.28); }
-    .hl-b { background: rgba(50,160,255,0.28); }
-    .hl-r { background: rgba(255,80,80,0.28); }
-    .hl-p { background: rgba(190,80,255,0.28); }
-    [data-theme="light"] .verse.sel { background: rgba(154,111,32,0.20); }
-    [data-theme="light"] .hl-y { background: rgba(230,180,0,0.45); }
-    [data-theme="light"] .hl-b { background: rgba(50,140,230,0.30); }
-    [data-theme="light"] .hl-r { background: rgba(230,60,60,0.28); }
-    [data-theme="light"] .hl-p { background: rgba(160,60,220,0.28); }
+    /* ── VERSE SELECTION + HIGHLIGHT UNDERLINE SYSTEM ── */
+    .verse.sel {
+      text-decoration-line: underline;
+      text-decoration-color: var(--gold);
+      text-decoration-thickness: 3px;
+      background: rgba(201,168,76,0.14);
+    }
+    .hld {
+      text-decoration-line: underline;
+      text-decoration-color: var(--hl-c, #FFD700);
+      text-decoration-thickness: 3px;
+    }
+    .verse.sel.hld { text-decoration-color: var(--hl-c, var(--gold)); }
 
-    /* ch nav arrows */
+    /* ── VERSE ACTION SHEET ── */
+    #va-ov {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 300;
+    }
+    #va-ov.open { display: block; }
+    #va {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--bg2); border-radius: 18px 18px 0 0;
+      z-index: 301; padding-bottom: var(--safe-bot);
+      transform: translateY(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+    }
+    #va.open { transform: none; }
+    #va-ref-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px 6px;
+    }
+    #va-ref { font-size: 13px; color: var(--text2); }
+    #va-count {
+      font-size: 12px; color: var(--gold); font-weight: 600;
+      background: rgba(201,168,76,0.15); padding: 2px 8px;
+      border-radius: 10px; display: none;
+    }
+    /* Horizontal slider */
+    #va-slider-wrap {
+      overflow-x: scroll; overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    #va-slider-wrap::-webkit-scrollbar { display: none; }
+    #va-slider-track { display: flex; width: 200%; }
+    .va-panel { width: 50%; flex-shrink: 0; scroll-snap-align: start; }
+    /* Panel 1 colors row */
+    #hl-colors-row {
+      display: flex; align-items: center;
+      padding: 8px 14px; gap: 10px; overflow-x: auto;
+      scrollbar-width: none;
+    }
+    #hl-colors-row::-webkit-scrollbar { display: none; }
+    .hl-dot {
+      width: 32px; height: 32px; border-radius: 50%; border: none;
+      cursor: pointer; flex-shrink: 0;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .hl-dot.on { box-shadow: 0 0 0 3px var(--bg2), 0 0 0 5px var(--text); transform: scale(1.15); }
+    .hl-pick-btn {
+      width: 32px; height: 32px; border-radius: 50%; border: 2px dashed var(--text2);
+      background: none; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text2); font-size: 18px; line-height: 1;
+    }
+    #hl-clr-row {
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 14px 6px;
+    }
+    .hl-clr {
+      background: var(--bg4); border: none; border-radius: 20px;
+      padding: 6px 14px; color: var(--text2); font-size: 13px; cursor: pointer;
+    }
+    .va-btns { display: flex; gap: 8px; padding: 6px 14px 16px; }
+    .va-btn {
+      flex: 1; background: var(--bg3); border: none; border-radius: 12px;
+      padding: 12px 6px; color: var(--text); font-size: 12px;
+      cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
+    }
+    .va-btn svg { width: 20px; height: 20px; color: var(--text2); }
+    /* Page dots */
+    #va-page-dots {
+      display: flex; justify-content: center; gap: 5px; padding: 4px 0 8px;
+    }
+    .va-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text2); opacity: 0.3;
+      transition: opacity .2s, background .2s;
+    }
+    .va-dot.on { background: var(--gold); opacity: 1; }
+    /* Panel 2 color picker */
+    #va-p2 { padding: 6px 14px 10px; }
+    #cp-back {
+      background: none; border: none; color: var(--gold);
+      font-size: 14px; cursor: pointer; padding: 2px 0 8px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    #cp-canvas {
+      width: 100%; border-radius: 10px; display: block;
+      cursor: crosshair; touch-action: none;
+    }
+    #cp-hue {
+      width: 100%; height: 22px; border-radius: 8px; display: block;
+      margin-top: 10px; cursor: pointer; touch-action: none;
+    }
+    #cp-bottom {
+      display: flex; align-items: center; gap: 12px; margin-top: 12px;
+    }
+    #cp-swatch {
+      width: 40px; height: 40px; border-radius: 10px;
+      border: 2px solid var(--border); flex-shrink: 0;
+    }
+    #cp-apply {
+      flex: 1; background: var(--gold); border: none; border-radius: 12px;
+      padding: 12px; color: #000; font-size: 15px; font-weight: 700; cursor: pointer;
+    }
     #ch-nav {
       display: flex; justify-content: space-between;
       padding: 24px 0 8px; margin-top: 8px;
@@ -397,40 +504,6 @@
     .tr-name { font-size: 13px; color: var(--text2); }
     .tr-chk { color: var(--gold); font-size: 22px; }
 
-    /* ── VERSE ACTION SHEET ── */
-    #va-ov {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.5); z-index: 300;
-    }
-    #va-ov.open { display: block; }
-    #va {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--bg2); border-radius: 18px 18px 0 0;
-      z-index: 301; padding-bottom: var(--safe-bot);
-      transform: translateY(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
-    }
-    #va.open { transform: none; }
-    #va-ref { font-size: 13px; color: var(--text2); text-align: center; padding: 12px 16px 6px; }
-    .hl-row { display: flex; align-items: center; gap: 14px; padding: 10px 18px; }
-    .hd {
-      width: 36px; height: 36px; border-radius: 50%; border: none;
-      cursor: pointer; transition: box-shadow .15s;
-    }
-    .hd.on { box-shadow: 0 0 0 3px var(--bg2), 0 0 0 5px var(--text); }
-    .hl-clr {
-      margin-left: auto; background: var(--bg4); border: none;
-      border-radius: 20px; padding: 6px 14px;
-      color: var(--text2); font-size: 13px; cursor: pointer;
-    }
-    .va-btns { display: flex; gap: 8px; padding: 6px 14px 16px; }
-    .va-btn {
-      flex: 1; background: var(--bg3); border: none; border-radius: 12px;
-      padding: 12px 6px; color: var(--text); font-size: 12px;
-      cursor: pointer; display: flex; flex-direction: column;
-      align-items: center; gap: 5px;
-    }
-    .va-btn svg { width: 20px; height: 20px; color: var(--text2); }
-
     /* ── GENEVA NOTES MODAL ── */
     #gn-ov {
       display: none; position: fixed; inset: 0;
@@ -476,6 +549,21 @@
 
     /* ── STATS SCREEN ── */
     #screen-stats { padding: 0 0 calc(var(--tab-h) + var(--safe-bot) + 30px); }
+    .st-recent-title {
+      font-size: 11px; font-weight: 800; color: var(--text2);
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 14px 16px 6px;
+    }
+    .st-recent-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .st-recent-item:active { background: var(--bg3); }
+    .st-ri-bk { font-size: 15px; color: var(--text); flex: 1; }
+    .st-ri-ch { font-size: 13px; color: var(--text2); margin-top: 2px; }
+    .st-ri-left { flex: 1; }
+    .st-ri-date { font-size: 12px; color: var(--text2); flex-shrink: 0; margin-right: 6px; }
     .st-summary {
       display: flex; gap: 0;
       margin: 14px 16px 0;
@@ -700,6 +788,7 @@
 
 <!-- SCREEN: STATS -->
 <div id="screen-stats" class="screen">
+  <div id="st-recent"></div>
   <div class="st-summary" id="st-summary"></div>
   <div class="st-month-nav">
     <button class="st-arr" id="st-prev" onclick="statsMonthNav(-1)">
@@ -782,31 +871,55 @@
 <div id="va-ov" onclick="closeVA()"></div>
 <div id="va">
   <div class="handle"></div>
-  <div id="va-ref"></div>
-  <div class="hl-row">
-    <button class="hd" id="hd-y" style="background:#f5d547" onclick="hlVerse('y')"></button>
-    <button class="hd" id="hd-b" style="background:#3ab8f5" onclick="hlVerse('b')"></button>
-    <button class="hd" id="hd-r" style="background:#f55a5a" onclick="hlVerse('r')"></button>
-    <button class="hd" id="hd-p" style="background:#c87af5" onclick="hlVerse('p')"></button>
-    <button class="hl-clr" onclick="clrHL()">Убрать</button>
+  <div id="va-ref-row">
+    <span id="va-ref"></span>
+    <span id="va-count"></span>
   </div>
-  <div class="va-btns">
-    <button class="va-btn" onclick="saveVerse()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-      Сохранить
-    </button>
-    <button class="va-btn" onclick="copyVerse()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-      Копировать
-    </button>
-    <button class="va-btn" onclick="shareVerse()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
-      Поделиться
-    </button>
-    <button class="va-btn" id="va-gn-btn" onclick="openGenevaNote()" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-      Комментарий
-    </button>
+  <div id="va-slider-wrap">
+    <div id="va-slider-track">
+      <!-- Panel 1: colors + actions -->
+      <div class="va-panel" id="va-p1">
+        <div id="hl-colors-row">
+          <!-- dots generated by JS -->
+          <button class="hl-pick-btn" onclick="goToColorPicker()" title="Свой цвет">+</button>
+        </div>
+        <div id="hl-clr-row">
+          <button class="hl-clr" onclick="clrHL()">Убрать подчёркивание</button>
+        </div>
+        <div class="va-btns">
+          <button class="va-btn" onclick="saveVerse()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+            Сохранить
+          </button>
+          <button class="va-btn" onclick="copyVerse()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Копировать
+          </button>
+          <button class="va-btn" onclick="shareVerse()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+            Поделиться
+          </button>
+          <button class="va-btn" id="va-gn-btn" onclick="openGenevaNote()" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            Комментарий
+          </button>
+        </div>
+      </div>
+      <!-- Panel 2: color picker -->
+      <div class="va-panel" id="va-p2">
+        <button id="cp-back" onclick="goToPanel1()">&#x2190; Назад</button>
+        <canvas id="cp-canvas" height="160"></canvas>
+        <canvas id="cp-hue"></canvas>
+        <div id="cp-bottom">
+          <div id="cp-swatch"></div>
+          <button id="cp-apply" onclick="applyCustomColor()">Применить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="va-page-dots">
+    <div class="va-dot on" id="va-dot-0"></div>
+    <div class="va-dot" id="va-dot-1"></div>
   </div>
 </div>
 
@@ -900,6 +1013,46 @@ var TRANS = [
   { code:"NLT",   lbl:"NLT",  name:"New Living Translation" }
 ];
 
+// Highlight colors (vivid, Apple system palette)
+var COLORS = [
+  '#FFD700', // yellow
+  '#FF8C00', // orange
+  '#FF3B30', // red
+  '#FF2D55', // pink
+  '#AF52DE', // purple
+  '#007AFF', // blue
+  '#5AC8FA', // teal
+  '#34C759', // green
+  '#FFFFFF', // white
+  '#AAAAAA', // gray
+];
+// Backward compat: old single-char → hex
+var COLOR_COMPAT = { y:'#FFD700', b:'#007AFF', r:'#FF3B30', p:'#AF52DE' };
+
+function hexToRgba(hex, a) {
+  if (!hex || hex.length < 7) return 'transparent';
+  var r = parseInt(hex.slice(1,3),16);
+  var g = parseInt(hex.slice(3,5),16);
+  var b = parseInt(hex.slice(5,7),16);
+  return 'rgba('+r+','+g+','+b+','+a+')';
+}
+function hsvToHex(h, s, v) {
+  var r, g, b, i = Math.floor(h * 6), f = h * 6 - i;
+  var p = v*(1-s), q = v*(1-f*s), t = v*(1-(1-f)*s);
+  switch(i % 6) {
+    case 0: r=v; g=t; b=p; break; case 1: r=q; g=v; b=p; break;
+    case 2: r=p; g=v; b=t; break; case 3: r=p; g=q; b=v; break;
+    case 4: r=t; g=p; b=v; break; default: r=v; g=p; b=q;
+  }
+  var toH = function(n) { return Math.round(n*255).toString(16).padStart(2,'0'); };
+  return '#' + toH(r) + toH(g) + toH(b);
+}
+
+// Color picker state
+var _cp = { h: 0.08, s: 0.9, v: 1.0, hex: '#FFD700' };
+var _cpDragging = false;
+var _cpHueDragging = false;
+
 // ── Bible.by book number mapping (our 0-based index → bible.by 1-based) ──
 // bible.by NT order differs: after Acts, it has James/Pet/John/Jude then Romans+
 var BBY_MAP = [
@@ -929,8 +1082,9 @@ var S = {
   ls: 0,            // letter-spacing px (allow .5 step)
   mh: 20,           // horizontal margin px
   pg: 0,            // paragraph spacing (extra px between verses)
-  sel: null,   // selected verse element
-  selN: 0      // selected verse number
+  sel: null,   // primary selected verse element
+  selN: 0,     // primary verse number
+  sels: {},    // all selected: {vn: element}
 };
 
 var HL = {};   // highlights: "bi_ch_v" → "y"|"b"|"r"|"p"
@@ -956,7 +1110,15 @@ var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
       if (typeof p.pg === "number") S.pg = p.pg;
     }
     var hs = localStorage.getItem("bbl_hl");
-    if (hs) HL = JSON.parse(hs);
+    if (hs) {
+      HL = JSON.parse(hs);
+      // Convert old single-char format to hex
+      var hlKeys = Object.keys(HL);
+      for (var hki = 0; hki < hlKeys.length; hki++) {
+        var hkv = HL[hlKeys[hki]];
+        if (hkv && hkv.length === 1) HL[hlKeys[hki]] = COLOR_COMPAT[hkv] || '#FFD700';
+      }
+    }
     var sv = localStorage.getItem("bbl_sv");
     if (sv) SAVED = JSON.parse(sv);
     var rd = localStorage.getItem("bbl_rd");
@@ -1128,8 +1290,10 @@ function renderVerses(verses) {
       .replace(/\s+/g, " ")
       .trim();
     var hk = hlKey(S.bi, S.ch, vn);
-    var hlCls = HL[hk] ? " hl-" + HL[hk] : "";
-    html += '<span class="verse' + hlCls + '" data-v="' + vn + '">' +
+    var hlColor = HL[hk];
+    var hlCls = hlColor ? " hld" : "";
+    var hlStyle = hlColor ? ' style="--hl-c:' + hlColor + ';background:' + hexToRgba(hlColor, 0.15) + '"' : '';
+    html += '<span class="verse' + hlCls + '" data-v="' + vn + '"' + hlStyle + '>' +
             '<sup>' + vn + '</sup>' + esc(txt) + ' </span>';
   }
   ct.innerHTML = html;
@@ -1462,66 +1626,140 @@ function openOv(id) {
   document.body.classList.add("modal-open");
 }
 
-// ═══════════════════════════════════════════════
-// VERSE ACTIONS
-// ═══════════════════════════════════════════════
+// ─── VERSE ACTIONS ───────────────────────────────
+var _vaOpen = false;
+
 function selectVerse(el) {
-  var prev = document.querySelector(".verse.sel");
-  if (prev && prev === el) { closeVA(); return; }
-  if (prev) prev.classList.remove("sel");
-  el.classList.add("sel");
   var vn = parseInt(el.getAttribute("data-v"), 10);
-  S.sel = el; S.selN = vn;
-  document.getElementById("va-ref").textContent = bkName(S.bi) + " " + S.ch + ":" + vn;
-  // update hl buttons
-  var hk = hlKey(S.bi, S.ch, vn);
-  var cols = ["y","b","r","p"];
-  for (var i = 0; i < cols.length; i++) {
-    var btn = document.getElementById("hd-" + cols[i]);
-    if (btn) btn.classList.toggle("on", HL[hk] === cols[i]);
+
+  if (!_vaOpen) {
+    // First selection — open sheet
+    S.sel = el; S.selN = vn; S.sels = {}; S.sels[vn] = el;
+    el.classList.add("sel");
+    _vaOpen = true;
+    updateVARef();
+    initColorDots();
+    refreshGenevaButton();
+    document.getElementById("va-ov").classList.add("open");
+    document.getElementById("va").classList.add("open");
+  } else {
+    // Sheet already open — toggle verse in selection
+    if (S.sels[vn]) {
+      // Deselect
+      el.classList.remove("sel");
+      delete S.sels[vn];
+      if (Object.keys(S.sels).length === 0) { closeVA(); return; }
+      // Update primary if removed
+      if (vn === S.selN) {
+        var remaining = Object.keys(S.sels);
+        S.selN = parseInt(remaining[0], 10);
+        S.sel = S.sels[S.selN];
+      }
+    } else {
+      // Add to selection
+      el.classList.add("sel");
+      S.sels[vn] = el;
+    }
+    updateVARef();
   }
-  // show commentary button only when notes loaded and exist for this verse
-  var gnBtn = document.getElementById("va-gn-btn");
-  if (gnBtn) {
-    var hasNote = _gLoaded && _gNotes[vn] && _gNotes[vn].length > 0;
-    gnBtn.style.display = hasNote ? "" : "none";
-  }
-  document.getElementById("va-ov").classList.add("open");
-  document.getElementById("va").classList.add("open");
 }
+
+function updateVARef() {
+  var keys = Object.keys(S.sels);
+  var count = keys.length;
+  document.getElementById("va-ref").textContent = bkName(S.bi) + " " + S.ch + ":" + S.selN;
+  var cnt = document.getElementById("va-count");
+  if (count > 1) {
+    cnt.textContent = count + " \u0441\u0442\u0438\u0445\u0430";
+    cnt.style.display = "";
+  } else {
+    cnt.style.display = "none";
+  }
+}
+
+function initColorDots() {
+  var row = document.getElementById("hl-colors-row");
+  var pickBtn = row.querySelector(".hl-pick-btn");
+  // Remove old dots (keep pick button)
+  var old = row.querySelectorAll(".hl-dot");
+  for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
+  // Add dots for each color
+  var firstHl = HL[hlKey(S.bi, S.ch, S.selN)];
+  for (var ci = 0; ci < COLORS.length; ci++) {
+    (function(hex) {
+      var btn = document.createElement("button");
+      btn.className = "hl-dot" + (firstHl === hex ? " on" : "");
+      btn.style.background = hex;
+      btn.style.boxShadow = hex === '#FFFFFF' || hex === '#AAAAAA' ? '0 0 0 1px var(--border)' : '';
+      btn.onclick = function() { hlVerse(hex); };
+      row.insertBefore(btn, pickBtn);
+    })(COLORS[ci]);
+  }
+}
+
 function closeVA() {
+  _vaOpen = false;
   document.getElementById("va-ov").classList.remove("open");
   document.getElementById("va").classList.remove("open");
-  var prev = document.querySelector(".verse.sel");
-  if (prev) prev.classList.remove("sel");
-  S.sel = null; S.selN = 0;
+  // Reset slider to panel 1
+  var wrap = document.getElementById("va-slider-wrap");
+  if (wrap) wrap.scrollLeft = 0;
+  // Clear all selections
+  var keys = Object.keys(S.sels);
+  for (var i = 0; i < keys.length; i++) {
+    if (S.sels[keys[i]]) S.sels[keys[i]].classList.remove("sel");
+  }
+  S.sel = null; S.selN = 0; S.sels = {};
+  document.getElementById("va-count").style.display = "none";
 }
-function hlVerse(c) {
-  if (!S.sel) return;
-  var hk = hlKey(S.bi, S.ch, S.selN);
-  var cls = ["hl-y","hl-b","hl-r","hl-p"];
-  for (var i = 0; i < cls.length; i++) S.sel.classList.remove(cls[i]);
-  S.sel.classList.add("hl-" + c);
-  HL[hk] = c;
+
+function applyHLStyle(el, hex) {
+  el.style.setProperty("--hl-c", hex);
+  el.style.backgroundColor = hexToRgba(hex, 0.15);
+  el.classList.add("hld");
+}
+function removeHLStyle(el) {
+  el.style.removeProperty("--hl-c");
+  el.style.backgroundColor = "";
+  el.classList.remove("hld");
+}
+
+function hlVerse(hex) {
+  var keys = Object.keys(S.sels);
+  for (var i = 0; i < keys.length; i++) {
+    var vn = parseInt(keys[i], 10);
+    var el = S.sels[vn];
+    if (!el) continue;
+    applyHLStyle(el, hex);
+    HL[hlKey(S.bi, S.ch, vn)] = hex;
+  }
   persistHL();
-  var cols = ["y","b","r","p"];
-  for (var j = 0; j < cols.length; j++) {
-    var btn = document.getElementById("hd-" + cols[j]);
-    if (btn) btn.classList.toggle("on", cols[j] === c);
+  // Update dot states
+  var dots = document.querySelectorAll(".hl-dot");
+  for (var d = 0; d < dots.length; d++) {
+    dots[d].classList.toggle("on", dots[d].style.background === hex ||
+      (dots[d].style.backgroundColor && rgbMatchesHex(dots[d].style.backgroundColor, hex)));
   }
 }
+
+function rgbMatchesHex(rgb, hex) {
+  // rough check: compare bg style
+  return false; // dots use style.background = hex directly so this isn't needed
+}
+
 function clrHL() {
-  if (!S.sel) return;
-  var hk = hlKey(S.bi, S.ch, S.selN);
-  var cls = ["hl-y","hl-b","hl-r","hl-p"];
-  for (var i = 0; i < cls.length; i++) S.sel.classList.remove(cls[i]);
-  delete HL[hk];
-  persistHL();
-  var cols = ["y","b","r","p"];
-  for (var j = 0; j < cols.length; j++) {
-    var btn = document.getElementById("hd-" + cols[j]);
-    if (btn) btn.classList.remove("on");
+  var keys = Object.keys(S.sels);
+  for (var i = 0; i < keys.length; i++) {
+    var vn = parseInt(keys[i], 10);
+    var el = S.sels[vn];
+    if (!el) continue;
+    removeHLStyle(el);
+    delete HL[hlKey(S.bi, S.ch, vn)];
   }
+  persistHL();
+  var dots = document.querySelectorAll(".hl-dot");
+  for (var d = 0; d < dots.length; d++) dots[d].classList.remove("on");
+  closeVA();
 }
 function getVerseText() {
   if (!S.sel) return "";
@@ -1769,11 +2007,10 @@ async function loadGenevaNotes(bi, ch) {
 }
 
 function refreshGenevaButton() {
-  // if verse action sheet is open, update commentary button visibility
   if (!S.sel) return;
   var gnBtn = document.getElementById("va-gn-btn");
   if (!gnBtn) return;
-  var hasNote = _gNotes[S.selN] && _gNotes[S.selN].length > 0;
+  var hasNote = _gLoaded && _gNotes[S.selN] && _gNotes[S.selN].length > 0;
   gnBtn.style.display = hasNote ? "" : "none";
 }
 
@@ -1887,6 +2124,7 @@ function renderStats() {
 }
 
 function doRenderStats() {
+  renderRecentChapters();
   // Summary
   var streak = calcStreak();
   var totalDays = calcTotalDays();
@@ -2008,6 +2246,136 @@ function showTab(name) {
   if (name === "search") setTimeout(function() {
     document.getElementById("search-input").focus();
   }, 100);
+}
+
+// ═══════════════════════════════════════════════
+// COLOR PICKER
+// ═══════════════════════════════════════════════
+function goToColorPicker() {
+  var wrap = document.getElementById("va-slider-wrap");
+  if (wrap) wrap.scrollTo({ left: wrap.offsetWidth, behavior: "smooth" });
+  setTimeout(function() { drawCPCanvas(); drawHueCanvas(); updateCPSwatch(); }, 320);
+}
+function goToPanel1() {
+  var wrap = document.getElementById("va-slider-wrap");
+  if (wrap) wrap.scrollTo({ left: 0, behavior: "smooth" });
+}
+function drawCPCanvas() {
+  var canvas = document.getElementById("cp-canvas");
+  if (!canvas) return;
+  var w = canvas.offsetWidth || 280;
+  canvas.width = w; canvas.height = 160;
+  var ctx = canvas.getContext("2d");
+  var gH = ctx.createLinearGradient(0,0,w,0);
+  gH.addColorStop(0, "#fff");
+  gH.addColorStop(1, "hsl("+Math.round(_cp.h*360)+",100%,50%)");
+  ctx.fillStyle = gH; ctx.fillRect(0,0,w,160);
+  var gV = ctx.createLinearGradient(0,0,0,160);
+  gV.addColorStop(0,"rgba(0,0,0,0)"); gV.addColorStop(1,"#000");
+  ctx.fillStyle = gV; ctx.fillRect(0,0,w,160);
+  var cx = _cp.s * w, cy = (1-_cp.v) * 160;
+  ctx.beginPath(); ctx.arc(cx,cy,9,0,Math.PI*2);
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,9,0,Math.PI*2);
+  ctx.strokeStyle = "rgba(0,0,0,0.4)"; ctx.lineWidth = 1; ctx.stroke();
+}
+function drawHueCanvas() {
+  var canvas = document.getElementById("cp-hue");
+  if (!canvas) return;
+  var w = canvas.offsetWidth || 280;
+  canvas.width = w; canvas.height = 22;
+  var ctx = canvas.getContext("2d");
+  var g = ctx.createLinearGradient(0,0,w,0);
+  for (var i = 0; i <= 6; i++) g.addColorStop(i/6,"hsl("+(i*60)+",100%,50%)");
+  ctx.fillStyle = g; ctx.fillRect(0,0,w,22);
+  var hx = _cp.h * w;
+  ctx.beginPath(); ctx.arc(hx,11,8,0,Math.PI*2);
+  ctx.strokeStyle="#fff"; ctx.lineWidth=2.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(hx,11,8,0,Math.PI*2);
+  ctx.strokeStyle="rgba(0,0,0,0.3)"; ctx.lineWidth=1; ctx.stroke();
+}
+function updateCPSwatch() {
+  _cp.hex = hsvToHex(_cp.h, _cp.s, _cp.v);
+  var sw = document.getElementById("cp-swatch");
+  if (sw) sw.style.background = _cp.hex;
+}
+function cpPos(canvas, e) {
+  var rect = canvas.getBoundingClientRect();
+  var cx2 = e.touches ? e.touches[0].clientX : e.clientX;
+  var cy2 = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: Math.max(0,Math.min(1,(cx2-rect.left)/rect.width)),
+    y: Math.max(0,Math.min(1,(cy2-rect.top)/rect.height))
+  };
+}
+(function() {
+  setTimeout(function() {
+    var sv = document.getElementById("cp-canvas");
+    var hu = document.getElementById("cp-hue");
+    if (!sv || !hu) return;
+    function onSV(e) { if (!_cpDragging) return; var p=cpPos(sv,e); _cp.s=p.x; _cp.v=1-p.y; drawCPCanvas(); updateCPSwatch(); }
+    function onHU(e) { if (!_cpHueDragging) return; _cp.h=cpPos(hu,e).x; drawCPCanvas(); drawHueCanvas(); updateCPSwatch(); }
+    sv.addEventListener("touchstart",function(e){_cpDragging=true;onSV(e);},{passive:true});
+    sv.addEventListener("touchmove",function(e){onSV(e);},{passive:true});
+    sv.addEventListener("touchend",function(){_cpDragging=false;},{passive:true});
+    hu.addEventListener("touchstart",function(e){_cpHueDragging=true;onHU(e);},{passive:true});
+    hu.addEventListener("touchmove",function(e){onHU(e);},{passive:true});
+    hu.addEventListener("touchend",function(){_cpHueDragging=false;},{passive:true});
+    // Page dots
+    var wrap = document.getElementById("va-slider-wrap");
+    if (wrap) wrap.addEventListener("scroll",function(){
+      var page = Math.round(wrap.scrollLeft/(wrap.clientWidth||1));
+      var d0=document.getElementById("va-dot-0"),d1=document.getElementById("va-dot-1");
+      if(d0)d0.classList.toggle("on",page===0);
+      if(d1)d1.classList.toggle("on",page===1);
+      if(page===1){drawCPCanvas();drawHueCanvas();updateCPSwatch();}
+    },{passive:true});
+  }, 600);
+})();
+function applyCustomColor() {
+  _cp.hex = hsvToHex(_cp.h, _cp.s, _cp.v);
+  hlVerse(_cp.hex);
+  goToPanel1();
+}
+
+// ═══════════════════════════════════════════════
+// RECENT CHAPTERS
+// ═══════════════════════════════════════════════
+function getRecentChapters(n) {
+  var entries = [];
+  var dkeys = Object.keys(DAILY).sort().reverse();
+  for (var i = 0; i < dkeys.length && entries.length < n; i++) {
+    var day = DAILY[dkeys[i]];
+    for (var j = day.length-1; j >= 0 && entries.length < n; j--) {
+      entries.push({ k: day[j], date: dkeys[i] });
+    }
+  }
+  return entries;
+}
+function formatShortDate(ds) {
+  var parts = ds.split("-");
+  var d2 = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
+  if (ds === getToday()) return "\u0421\u0435\u0433\u043e\u0434\u043d\u044f";
+  var yest = new Date(); yest.setDate(yest.getDate()-1);
+  if (ds === dateStr(yest)) return "\u0412\u0447\u0435\u0440\u0430";
+  return d2.getDate() + " " + MONTHS_RU[d2.getMonth()];
+}
+function renderRecentChapters() {
+  var recent = getRecentChapters(5);
+  var el = document.getElementById("st-recent");
+  if (!el) return;
+  if (!recent.length) { el.innerHTML = ""; return; }
+  var html = '<div class="st-recent-title">\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0435 \u0447\u0442\u0435\u043d\u0438\u0435</div>';
+  for (var i = 0; i < recent.length; i++) {
+    var rparts = recent[i].k.split("_");
+    var rbi = parseInt(rparts[0],10), rch = parseInt(rparts[1],10);
+    html += '<div class="st-recent-item" onclick="goFromDay('+rbi+','+rch+')">' +
+      '<div class="st-ri-left"><div class="st-ri-bk">'+esc(bkName(rbi))+'</div>' +
+      '<div class="st-ri-ch">\u0413\u043b\u0430\u0432\u0430 '+rch+'</div></div>' +
+      '<span class="st-ri-date">'+formatShortDate(recent[i].date)+'</span>' +
+      '<span class="dd-go">\u2192</span></div>';
+  }
+  el.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════
