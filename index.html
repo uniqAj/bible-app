@@ -127,35 +127,16 @@
       background: rgba(201,168,76,0.35);
       border-radius: 3px;
     }
-    .hld {
-      border-radius: 3px;
-      /* background set via inline style with full opacity */
-    }
+    .hld { border-radius: 3px; }
 
-    /* ── VERSE ACTION SHEET ── */
-    #va-ov {
-      display: none; position: fixed;
-      /* Only cover top bar area, not the text - pointer-events off */
-      inset: 0;
-      background: transparent;
-      z-index: 300;
-      pointer-events: none;
-    }
-    #va-ov.open { display: block; }
-    /* Close button area above the sheet */
-    #va-backdrop {
-      position: absolute; inset: 0;
-      bottom: auto;
-      height: calc(100% - 280px); /* above the sheet */
-      pointer-events: all;
-      cursor: default;
-    }
+    /* ── VERSE ACTION SHEET (no overlay - keep verse taps active) ── */
     #va {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: var(--bg2); border-radius: 18px 18px 0 0;
       z-index: 301; padding-bottom: var(--safe-bot);
       transform: translateY(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
       overflow: hidden;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
     }
     #va.open { transform: none; }
     #va-ref-row {
@@ -875,10 +856,7 @@
   </div>
 </div>
 
-<!-- Verse actions -->
-<div id="va-ov">
-  <div id="va-backdrop" onclick="closeVA()"></div>
-</div>
+<!-- Verse actions sheet -->
 <div id="va">
   <div class="handle"></div>
   <div id="va-ref-row">
@@ -894,7 +872,7 @@
           <button class="hl-pick-btn" onclick="goToColorPicker()" title="Свой цвет">+</button>
         </div>
         <div id="hl-clr-row">
-          <button class="hl-clr" onclick="clrHL()">Убрать подчёркивание</button>
+          <button class="hl-clr" onclick="clrHL()">Убрать выделение</button>
         </div>
         <div class="va-btns">
           <button class="va-btn" onclick="saveVerse()">
@@ -1097,7 +1075,7 @@ var S = {
   sels: {},    // all selected: {vn: element}
 };
 
-var HL = {};   // highlights: "bi_ch_v" → "y"|"b"|"r"|"p"
+var HL = {};   // highlights: "bi_ch_v" → "#RRGGBB" (hex color)
 var SAVED = []; // saved verses: [{ref, text}]
 var READ = {};  // read chapters: "bi_ch" → true
 var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
@@ -1357,10 +1335,17 @@ function goNext() {
   var ticking = false;
   var THRESHOLD = 6; // px минимум чтобы среагировать
 
+  var _markedThisVisit = "";
   el.addEventListener("scroll", function() {
-    // mark read
-    var remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
-    if (remaining <= 60) markRead(S.bi, S.ch);
+    // mark read (only once per chapter visit)
+    var visitKey = S.bi + "_" + S.ch;
+    if (_markedThisVisit !== visitKey) {
+      var remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (remaining <= 60) {
+        markRead(S.bi, S.ch);
+        _markedThisVisit = visitKey;
+      }
+    }
 
     // update chapter progress bar
     var max = el.scrollHeight - el.clientHeight;
@@ -1643,14 +1628,12 @@ function selectVerse(el) {
   var vn = parseInt(el.getAttribute("data-v"), 10);
 
   if (!_vaOpen) {
-    // First selection — open sheet
     S.sel = el; S.selN = vn; S.sels = {}; S.sels[vn] = el;
     el.classList.add("sel");
     _vaOpen = true;
     updateVARef();
     initColorDots();
     refreshGenevaButton();
-    document.getElementById("va-ov").classList.add("open");
     document.getElementById("va").classList.add("open");
   } else {
     // Sheet already open — toggle verse in selection
@@ -1700,6 +1683,7 @@ function initColorDots() {
       var btn = document.createElement("button");
       btn.className = "hl-dot" + (firstHl === hex ? " on" : "");
       btn.style.background = hex;
+      btn.setAttribute("data-hex", hex);
       btn.style.boxShadow = hex === '#FFFFFF' || hex === '#AAAAAA' ? '0 0 0 1px var(--border)' : '';
       btn.onclick = function() { hlVerse(hex); };
       row.insertBefore(btn, pickBtn);
@@ -1709,12 +1693,9 @@ function initColorDots() {
 
 function closeVA() {
   _vaOpen = false;
-  document.getElementById("va-ov").classList.remove("open");
   document.getElementById("va").classList.remove("open");
-  // Reset slider to panel 1
   var wrap = document.getElementById("va-slider-wrap");
   if (wrap) wrap.scrollLeft = 0;
-  // Clear all selections
   var keys = Object.keys(S.sels);
   for (var i = 0; i < keys.length; i++) {
     if (S.sels[keys[i]]) S.sels[keys[i]].classList.remove("sel");
@@ -1728,7 +1709,8 @@ function applyHLStyle(el, hex) {
   el.classList.add("hld");
 }
 function removeHLStyle(el) {
-  el.style.backgroundColor = "";
+  el.style.removeProperty("background-color");
+  el.style.removeProperty("background");
   el.classList.remove("hld");
 }
 
@@ -1742,17 +1724,11 @@ function hlVerse(hex) {
     HL[hlKey(S.bi, S.ch, vn)] = hex;
   }
   persistHL();
-  // Update dot states
+  // Update dot states - dots have data-hex
   var dots = document.querySelectorAll(".hl-dot");
   for (var d = 0; d < dots.length; d++) {
-    dots[d].classList.toggle("on", dots[d].style.background === hex ||
-      (dots[d].style.backgroundColor && rgbMatchesHex(dots[d].style.backgroundColor, hex)));
+    dots[d].classList.toggle("on", dots[d].getAttribute("data-hex") === hex);
   }
-}
-
-function rgbMatchesHex(rgb, hex) {
-  // rough check: compare bg style
-  return false; // dots use style.background = hex directly so this isn't needed
 }
 
 function clrHL() {
@@ -2162,7 +2138,6 @@ function doRenderStats() {
   var daysInMonth = new Date(year, month + 1, 0).getDate();
 
   var html = "";
-  var dayCount = 0;
   var totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
 
   html += '<div class="cal-week">';
@@ -2183,7 +2158,6 @@ function doRenderStats() {
               (cnt > 0 ? '<span class="cal-day-dot"></span>' : '') +
               '</div>';
     }
-    dayCount++;
   }
   html += '</div>';
   document.getElementById("cal-weeks").innerHTML = html;
