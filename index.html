@@ -84,6 +84,66 @@
     }
     .tib svg { width: 22px; height: 22px; }
 
+    /* ── READING TABS BAR ── */
+    #tabs-bar {
+      position: fixed;
+      top: calc(var(--bar-h) + var(--safe-top));
+      left: 0; right: 0;
+      height: 36px;
+      background: rgba(0,0,0,0.72);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      backdrop-filter: blur(18px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 99;
+      display: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    #tabs-bar::-webkit-scrollbar { display: none; }
+    #tabs-bar.show { display: flex; align-items: center; }
+    #tabs-bar.bar-hidden { transform: translateY(calc(-100% - var(--bar-h) - var(--safe-top))); }
+    [data-theme="light"] #tabs-bar {
+      background: rgba(255,255,255,0.78);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    #tabs-bar-inner {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px; height: 100%;
+    }
+    .tab-chip {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg3); border: 1px solid transparent;
+      border-radius: 14px; padding: 5px 8px 5px 11px;
+      cursor: pointer; font-size: 12px; color: var(--text2);
+      max-width: 160px;
+    }
+    .tab-chip.active {
+      background: var(--bg4); color: var(--text);
+      border-color: var(--gold);
+    }
+    .tab-chip-label {
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 110px;
+    }
+    .tab-chip-close {
+      background: none; border: none; color: var(--text2);
+      padding: 0 2px; cursor: pointer; font-size: 14px;
+      line-height: 1; display: flex; align-items: center;
+    }
+    .tab-chip.active .tab-chip-close { color: var(--text); }
+    .tab-add {
+      flex-shrink: 0;
+      width: 28px; height: 24px;
+      background: var(--bg3); border: none; border-radius: 12px;
+      color: var(--text2); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .tab-add:disabled { opacity: 0.3; cursor: default; }
+
     /* ── SCREENS ── */
     .screen {
       position: fixed;
@@ -96,6 +156,8 @@
     }
     .screen.active { display: block; }
     .screen.bar-hidden { top: var(--safe-top); }
+    .screen.with-tabs { top: calc(var(--bar-h) + var(--safe-top) + 36px); }
+    .screen.with-tabs.bar-hidden { top: var(--safe-top); }
     .screen.font-shift { top: calc(var(--bar-h) + var(--safe-top) + 96px); }
     .screen.font-shift.bar-hidden { top: var(--safe-top); }
 
@@ -686,10 +748,18 @@
   <button class="tib" onclick="toggleTheme()" id="theme-btn" title="Theme">
     <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
   </button>
+  <button class="tib" onclick="newReadingTab()" title="Новая вкладка">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+  </button>
   <button class="tib" onclick="openSearch()" title="Search">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
   </button>
   <div id="ch-progress"></div>
+</div>
+
+<!-- READING TABS BAR -->
+<div id="tabs-bar">
+  <div id="tabs-bar-inner"></div>
 </div>
 
 <!-- FONT BAR -->
@@ -1080,6 +1150,12 @@ var SAVED = []; // saved verses: [{ref, text}]
 var READ = {};  // read chapters: "bi_ch" → true
 var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
 
+// Reading tabs: each tab is independent reading position
+// TABS_R[i] = { bi, ch, tr, scroll? }
+var TABS_R = [];
+var ACTIVE_TAB = 0;
+var MAX_TABS = 3;
+
 // ── Load persisted state ──
 (function() {
   try {
@@ -1113,8 +1189,26 @@ var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
     if (rd) READ = JSON.parse(rd);
     var dy = localStorage.getItem("bbl_dy");
     if (dy) DAILY = JSON.parse(dy);
+    var tb = localStorage.getItem("bbl_tabs");
+    if (tb) {
+      var pp = JSON.parse(tb);
+      if (pp && Array.isArray(pp.list) && pp.list.length > 0) {
+        TABS_R = pp.list;
+        ACTIVE_TAB = (typeof pp.active === "number" && pp.active < pp.list.length) ? pp.active : 0;
+      }
+    }
   } catch(e) { }
 })();
+
+// Init tabs: if empty, create one from S
+if (TABS_R.length === 0) {
+  TABS_R.push({ bi: S.bi, ch: S.ch, tr: S.tr });
+  ACTIVE_TAB = 0;
+} else {
+  // Sync S with active tab
+  var at = TABS_R[ACTIVE_TAB];
+  S.bi = at.bi; S.ch = at.ch; S.tr = at.tr;
+}
 
 // ═══════════════════════════════════════════════
 // PERSIST
@@ -1135,6 +1229,17 @@ function persistRD() {
 }
 function persistDAILY() {
   try { localStorage.setItem("bbl_dy", JSON.stringify(DAILY)); } catch(e) {}
+}
+function persistTabs() {
+  try { localStorage.setItem("bbl_tabs", JSON.stringify({ list: TABS_R, active: ACTIVE_TAB })); } catch(e) {}
+}
+// Save current S into active tab
+function syncTabFromState() {
+  if (!TABS_R[ACTIVE_TAB]) return;
+  TABS_R[ACTIVE_TAB].bi = S.bi;
+  TABS_R[ACTIVE_TAB].ch = S.ch;
+  TABS_R[ACTIVE_TAB].tr = S.tr;
+  persistTabs();
 }
 function getToday() {
   var d = new Date();
@@ -1207,6 +1312,94 @@ function updateBar() {
 }
 
 // ═══════════════════════════════════════════════
+// READING TABS
+// ═══════════════════════════════════════════════
+function renderTabsBar() {
+  var bar = document.getElementById("tabs-bar");
+  var inner = document.getElementById("tabs-bar-inner");
+  var screens = document.querySelectorAll(".screen");
+
+  // Hide bar entirely if only 1 tab
+  if (TABS_R.length <= 1) {
+    bar.classList.remove("show");
+    for (var s = 0; s < screens.length; s++) screens[s].classList.remove("with-tabs");
+    return;
+  }
+  bar.classList.add("show");
+  for (var s2 = 0; s2 < screens.length; s2++) screens[s2].classList.add("with-tabs");
+
+  var html = "";
+  for (var i = 0; i < TABS_R.length; i++) {
+    var t = TABS_R[i];
+    var isEnTab = t.tr === "NIV" || t.tr === "NLT";
+    var name = isEnTab ? BOOKS_EN[t.bi] : BOOKS[t.bi][0];
+    var label = name + " " + t.ch;
+    var trLbl = "";
+    for (var ti = 0; ti < TRANS.length; ti++) if (TRANS[ti].code === t.tr) trLbl = TRANS[ti].lbl;
+    html += '<div class="tab-chip' + (i === ACTIVE_TAB ? " active" : "") + '" onclick="switchTab(' + i + ')">' +
+            '<span class="tab-chip-label">' + esc(label) + ' · ' + esc(trLbl) + '</span>' +
+            '<button class="tab-chip-close" onclick="event.stopPropagation();closeTab(' + i + ')">\u00D7</button>' +
+            '</div>';
+  }
+  // Add button
+  var disabled = TABS_R.length >= MAX_TABS ? " disabled" : "";
+  html += '<button class="tab-add" onclick="newReadingTab()"' + disabled + '>+</button>';
+  inner.innerHTML = html;
+
+  // Scroll active into view
+  setTimeout(function() {
+    var active = inner.querySelector(".tab-chip.active");
+    if (active && active.scrollIntoView) {
+      active.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  }, 50);
+}
+
+function newReadingTab() {
+  if (TABS_R.length >= MAX_TABS) {
+    showToast("\u041c\u0430\u043a\u0441\u0438\u043c\u0443\u043c 3 \u0432\u043a\u043b\u0430\u0434\u043a\u0438");
+    return;
+  }
+  // Save current state to old active tab first
+  syncTabFromState();
+  // New tab starts at Genesis 1 in current translation
+  TABS_R.push({ bi: 0, ch: 1, tr: S.tr });
+  ACTIVE_TAB = TABS_R.length - 1;
+  S.bi = 0; S.ch = 1;
+  persistTabs();
+  renderTabsBar();
+  loadChapter();
+}
+
+function switchTab(i) {
+  if (i === ACTIVE_TAB || i < 0 || i >= TABS_R.length) return;
+  syncTabFromState(); // save current position
+  ACTIVE_TAB = i;
+  var t = TABS_R[i];
+  S.bi = t.bi; S.ch = t.ch; S.tr = t.tr;
+  persistTabs();
+  renderTabsBar();
+  loadChapter();
+}
+
+function closeTab(i) {
+  if (TABS_R.length <= 1) return; // never close last
+  var wasActive = i === ACTIVE_TAB;
+  TABS_R.splice(i, 1);
+  if (ACTIVE_TAB >= TABS_R.length) ACTIVE_TAB = TABS_R.length - 1;
+  else if (i < ACTIVE_TAB) ACTIVE_TAB--;
+  persistTabs();
+  if (wasActive) {
+    var t = TABS_R[ACTIVE_TAB];
+    S.bi = t.bi; S.ch = t.ch; S.tr = t.tr;
+    renderTabsBar();
+    loadChapter();
+  } else {
+    renderTabsBar();
+  }
+}
+
+// ═══════════════════════════════════════════════
 // LOAD CHAPTER
 // ═══════════════════════════════════════════════
 var _loading = false;
@@ -1214,12 +1407,16 @@ async function loadChapter() {
   if (_loading) return;
   _loading = true;
   closeVA();
+  syncTabFromState();
+  renderTabsBar();
   persist();
   updateBar();
   // reset bar visibility on chapter change
   document.getElementById("top-bar").classList.remove("bar-hidden");
   document.getElementById("bot-nav").classList.remove("nav-hidden");
   document.getElementById("screen-bible").classList.remove("bar-hidden");
+  var tb2 = document.getElementById("tabs-bar");
+  if (tb2) tb2.classList.remove("bar-hidden");
 
   var ct = document.getElementById("ch-text");
   var lm = document.getElementById("loading-msg");
@@ -1360,16 +1557,19 @@ function goNext() {
         var y = el.scrollTop;
         var dy = y - lastY;
         if (Math.abs(dy) > THRESHOLD) {
+          var tbar = document.getElementById("tabs-bar");
           if (dy > 0 && y > 60) {
             // scrolling DOWN — hide
             topBar.classList.add("bar-hidden");
             botNav.classList.add("nav-hidden");
             el.classList.add("bar-hidden");
+            if (tbar) tbar.classList.add("bar-hidden");
           } else {
             // scrolling UP — show
             topBar.classList.remove("bar-hidden");
             botNav.classList.remove("nav-hidden");
             el.classList.remove("bar-hidden");
+            if (tbar) tbar.classList.remove("bar-hidden");
           }
           lastY = y;
         }
@@ -2483,6 +2683,7 @@ document.getElementById("font-range").value = S.fs;
 applyTheme(S.theme);
 setAlign(S.align);
 applyTypography();
+renderTabsBar();
 loadChapter();
 </script>
 </body>
