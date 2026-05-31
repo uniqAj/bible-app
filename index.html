@@ -158,11 +158,12 @@
     .screen.bar-hidden { top: var(--safe-top); }
     .screen.with-tabs { top: calc(var(--bar-h) + var(--safe-top) + 36px); }
     .screen.with-tabs.bar-hidden { top: var(--safe-top); }
-    .screen.font-shift { top: calc(var(--bar-h) + var(--safe-top) + 96px); }
-    .screen.font-shift.bar-hidden { top: var(--safe-top); }
 
     /* ── READER SCREEN ── */
-    #screen-bible { padding: 20px 20px calc(var(--tab-h) + var(--safe-bot) + 30px); }
+    #screen-bible { 
+      padding: 20px 20px calc(var(--tab-h) + var(--safe-bot) + 30px);
+      overscroll-behavior: contain;
+    }
     #loading-msg {
       display: none; text-align: center;
       padding: 80px 20px; color: var(--text2); font-size: 15px;
@@ -249,6 +250,13 @@
       padding: 6px 14px; color: var(--text2); font-size: 13px; cursor: pointer;
     }
     .va-btns { display: flex; gap: 8px; padding: 6px 14px 16px; }
+    #gn-status {
+      font-size: 11px; color: var(--text2);
+      padding: 8px 14px 4px;
+      text-align: center;
+    }
+    #gn-status.loading { animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:0.6;} 50%{opacity:1;} }
     .va-btn {
       flex: 1; background: var(--bg3); border: none; border-radius: 12px;
       padding: 12px 6px; color: var(--text); font-size: 12px;
@@ -317,7 +325,11 @@
       flex-direction: column; gap: 10px;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
+    #font-bar.with-tabs { top: calc(var(--bar-h) + var(--safe-top) + 36px); }
     #font-bar.open { display: flex; }
+    .screen.font-shift { top: calc(var(--bar-h) + var(--safe-top) + 96px); }
+    .screen.font-shift.bar-hidden { top: var(--safe-top); }
+    .screen.with-tabs.font-shift { top: calc(var(--bar-h) + var(--safe-top) + 36px + 96px); }
     #font-size-row { display: flex; align-items: center; gap: 12px; }
     #font-bar span { color: var(--text2); font-size: 13px; min-width: 70px; }
     #font-range { flex: 1; accent-color: var(--gold); }
@@ -397,7 +409,7 @@
       padding: 10px 16px; color: #000; font-size: 14px;
       font-weight: 700; cursor: pointer;
     }
-    #search-results { }
+    #search-hint { color: var(--text2); font-size: 14px; text-align: center; padding: 40px 20px; }
     .s-result {
       background: var(--bg3); border-radius: 10px;
       padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
@@ -405,7 +417,6 @@
     .s-result-ref { color: var(--gold); font-size: 13px; font-weight: 700; margin-bottom: 4px; }
     .s-result-text { font-family: 'PT Serif', Georgia, serif; font-size: 16px; line-height: 1.5; }
     .s-result-text em { background: rgba(201,168,76,0.3); font-style: normal; border-radius: 2px; }
-    #search-hint { color: var(--text2); font-size: 14px; text-align: center; padding: 40px 20px; }
 
     /* ── SAVED SCREEN ── */
     #screen-saved { padding: 16px 16px calc(var(--tab-h) + var(--safe-bot) + 30px); }
@@ -611,7 +622,7 @@
       cursor: pointer;
     }
     .st-recent-item:active { background: var(--bg3); }
-    .st-ri-bk { font-size: 15px; color: var(--text); flex: 1; }
+    .st-ri-bk { font-size: 15px; color: var(--text); }
     .st-ri-ch { font-size: 13px; color: var(--text2); margin-top: 2px; }
     .st-ri-left { flex: 1; }
     .st-ri-date { font-size: 12px; color: var(--text2); flex-shrink: 0; margin-right: 6px; }
@@ -659,9 +670,9 @@
     .cal-day.empty { background: transparent; cursor: default; }
     .cal-day.today { box-shadow: 0 0 0 2px var(--gold); }
     .cal-day.rd0 { background: var(--bg3); }
-    .cal-day.rd1 { background: color-mix(in srgb, var(--gold) 22%, var(--bg3)); }
-    .cal-day.rd2 { background: color-mix(in srgb, var(--gold) 50%, var(--bg3)); }
-    .cal-day.rd3 { background: color-mix(in srgb, var(--gold) 80%, var(--bg3)); }
+    .cal-day.rd1 { background: rgba(201,168,76,0.22); background: color-mix(in srgb, var(--gold) 22%, var(--bg3)); }
+    .cal-day.rd2 { background: rgba(201,168,76,0.50); background: color-mix(in srgb, var(--gold) 50%, var(--bg3)); }
+    .cal-day.rd3 { background: rgba(201,168,76,0.80); background: color-mix(in srgb, var(--gold) 80%, var(--bg3)); }
     .cal-day.rd4 { background: var(--gold); }
     .cal-day-num {
       font-size: 13px; font-weight: 500; color: var(--text);
@@ -944,6 +955,7 @@
         <div id="hl-clr-row">
           <button class="hl-clr" onclick="clrHL()">Убрать выделение</button>
         </div>
+        <div id="gn-status"></div>
         <div class="va-btns">
           <button class="va-btn" onclick="saveVerse()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
@@ -988,10 +1000,10 @@
       <span id="gn-title"></span>
       <button id="gn-close" onclick="closeGN()">&#x2715;</button>
     </div>
-    <div id="gn-src">Новая Женевская Учебная Библия &nbsp;&bull;&nbsp; bible.by</div>
     <div id="gn-body">
       <div id="gn-loading"></div>
     </div>
+    <div id="gn-src">\u041d\u043e\u0432\u0430\u044f \u0416\u0435\u043d\u0435\u0432\u0441\u043a\u0430\u044f \u0423\u0447\u0435\u0431\u043d\u0430\u044f \u0411\u0438\u0431\u043b\u0438\u044f &nbsp;&bull;&nbsp; bible.by</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -1112,7 +1124,8 @@ var _cpDragging = false;
 var _cpHueDragging = false;
 
 // ── Bible.by book number mapping (our 0-based index → bible.by 1-based) ──
-// bible.by NT order differs: after Acts, it has James/Pet/John/Jude then Romans+
+// bible.by NT: Matt-Acts normal (40-44), then Romans-Hebrews (52-65),
+// then James-Jude (45-51), then Revelation (66)
 var BBY_MAP = [
   1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
   21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,
@@ -1530,7 +1543,7 @@ function goNext() {
   var botNav = document.getElementById("bot-nav");
   var lastY = 0;
   var ticking = false;
-  var THRESHOLD = 6; // px минимум чтобы среагировать
+  var THRESHOLD = 6; // px minimum to react
 
   var _markedThisVisit = "";
   el.addEventListener("scroll", function() {
@@ -1670,14 +1683,17 @@ function toggleFontBar() {
   _fontOpen = !_fontOpen;
   var fb = document.getElementById("font-bar");
   var bs = document.getElementById("screen-bible");
+  var hasTabs = TABS_R.length > 1;
   if (_fontOpen) {
     fb.classList.add("open");
+    fb.classList.toggle("with-tabs", hasTabs);
     document.getElementById("font-range").value = S.fs;
     document.getElementById("font-lbl").textContent = S.fs + "px";
     setAlign(S.align);
     bs.classList.add("font-shift");
   } else {
     fb.classList.remove("open");
+    fb.classList.remove("with-tabs");
     bs.classList.remove("font-shift");
   }
 }
@@ -1713,7 +1729,7 @@ function bookProgress(bi) {
 }
 function progressRingSVG(pct, done) {
   var r = 14; var cx = 19; var cy = 19;
-  var circ = 2 * 3.14159 * r;
+  var circ = 2 * Math.PI * r;
   var offset = circ * (1 - pct / 100);
   var lbl = done ? "&#x2713;" : (pct + "%");
   var lblCls = done ? " done" : "";
@@ -1833,6 +1849,7 @@ function selectVerse(el) {
     _vaOpen = true;
     updateVARef();
     initColorDots();
+    updateGenevaStatus();
     refreshGenevaButton();
     document.getElementById("va").classList.add("open");
   } else {
@@ -1854,7 +1871,15 @@ function selectVerse(el) {
       S.sels[vn] = el;
     }
     updateVARef();
+    updateGenevaStatus();
   }
+}
+
+function pluralVerses(n) {
+  var mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return n + " \u0441\u0442\u0438\u0445";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return n + " \u0441\u0442\u0438\u0445\u0430";
+  return n + " \u0441\u0442\u0438\u0445\u043e\u0432";
 }
 
 function updateVARef() {
@@ -1863,7 +1888,7 @@ function updateVARef() {
   document.getElementById("va-ref").textContent = bkName(S.bi) + " " + S.ch + ":" + S.selN;
   var cnt = document.getElementById("va-count");
   if (count > 1) {
-    cnt.textContent = count + " \u0441\u0442\u0438\u0445\u0430";
+    cnt.textContent = pluralVerses(count);
     cnt.style.display = "";
   } else {
     cnt.style.display = "none";
@@ -1946,15 +1971,26 @@ function clrHL() {
   closeVA();
 }
 function getVerseText() {
-  if (!S.sel) return "";
-  // textContent includes the verse number from <sup>, remove it
-  var clone = S.sel.cloneNode(true);
-  var sups = clone.querySelectorAll("sup");
-  for (var i = 0; i < sups.length; i++) sups[i].remove();
-  return (clone.textContent || "").trim();
+  // Collect all selected verses in order
+  var keys = Object.keys(S.sels).map(function(k){return parseInt(k,10);}).sort(function(a,b){return a-b;});
+  if (!keys.length) return "";
+  var parts = [];
+  for (var i = 0; i < keys.length; i++) {
+    var el = S.sels[keys[i]];
+    if (!el) continue;
+    var clone = el.cloneNode(true);
+    var sups = clone.querySelectorAll("sup");
+    for (var j = 0; j < sups.length; j++) sups[j].remove();
+    var t = (clone.textContent || "").trim();
+    if (t) parts.push(t);
+  }
+  return parts.join(" ");
 }
 function getVerseRef() {
-  return bkName(S.bi) + " " + S.ch + ":" + S.selN;
+  var keys = Object.keys(S.sels).map(function(k){return parseInt(k,10);}).sort(function(a,b){return a-b;});
+  if (!keys.length) return bkName(S.bi) + " " + S.ch + ":" + S.selN;
+  if (keys.length === 1) return bkName(S.bi) + " " + S.ch + ":" + keys[0];
+  return bkName(S.bi) + " " + S.ch + ":" + keys[0] + "\u2013" + keys[keys.length-1];
 }
 function copyVerse() {
   var txt = getVerseText() + " \u2014 " + getVerseRef();
@@ -1972,9 +2008,7 @@ function copyVerse() {
 function shareVerse() {
   var txt = getVerseText() + " \u2014 " + getVerseRef();
   if (navigator.share) {
-    navigator.share({ text: txt }).catch(function() {
-      // user cancelled or error - silent
-    });
+    navigator.share({ text: txt }).catch(function() {});
   } else {
     copyVerse(); return;
   }
@@ -1983,7 +2017,6 @@ function shareVerse() {
 function saveVerse() {
   var ref = getVerseRef();
   var txt = getVerseText();
-  // avoid duplicates
   for (var i = 0; i < SAVED.length; i++) {
     if (SAVED[i].ref === ref) {
       showToast("\u0423\u0436\u0435 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043e");
@@ -2058,12 +2091,17 @@ function doSearch() {
       if (isNaN(bi2) || isNaN(ch2)) continue;
       if (tr2 !== S.tr) continue;
       for (var vi = 0; vi < verses.length; vi++) {
-        var vt = (verses[vi].text || "").toLowerCase();
+        var vt = (verses[vi].text || "")
+          .replace(/<br\s*\/?>/gi, " ")
+          .replace(/<\/?[a-z][^>]*>/gi, "")
+          .toLowerCase();
         if (vt.indexOf(q) !== -1) {
           found.push({
             bi: bi2, ch: ch2,
             vn: verses[vi].verse,
-            text: verses[vi].text || ""
+            text: (verses[vi].text || "")
+              .replace(/<br\s*\/?>/gi, " ")
+              .replace(/<\/?[a-z][^>]*>/gi, "")
           });
           if (found.length >= 50) { ki = keys.length; break; }
         }
@@ -2183,10 +2221,12 @@ async function loadGenevaNotes(bi, ch) {
     _gLoaded = true;
     try { localStorage.setItem(genevaKey(bi, ch), JSON.stringify(notes)); } catch(e2) {}
     refreshGenevaButton();
+    updateGenevaStatus();
   } catch(err) {
-    _gLoaded = true; // give up; mark as loaded so button doesn't keep showing
+    _gLoaded = true;
     console.error("Geneva:", err);
     refreshGenevaButton();
+    updateGenevaStatus();
   }
 }
 
@@ -2196,6 +2236,26 @@ function refreshGenevaButton() {
   if (!gnBtn) return;
   var hasNote = _gLoaded && _gNotes[S.selN] && _gNotes[S.selN].length > 0;
   gnBtn.style.display = hasNote ? "" : "none";
+}
+
+function updateGenevaStatus() {
+  var st = document.getElementById("gn-status");
+  if (!st) return;
+  if (!_gLoaded) {
+    st.textContent = "\ud83d\udcd6 \u0417\u0430\u043c\u0435\u0442\u043a\u0438 \u0437\u0430\u0433\u0440\u0443\u0436\u0430\u044e\u0442\u0441\u044f...";
+    st.classList.add("loading");
+  } else {
+    var hasNote = _gNotes[S.selN] && _gNotes[S.selN].length > 0;
+    if (hasNote) {
+      st.textContent = "\u2713 \u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u0435\u043d";
+      st.classList.remove("loading");
+      st.style.color = "var(--gold)";
+    } else {
+      st.textContent = "\u2014 \u0417\u0430\u043c\u0435\u0442\u043e\u043a \u043d\u0435\u0442 \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u0441\u0442\u0438\u0445\u0430";
+      st.classList.remove("loading");
+      st.style.color = "var(--text2)";
+    }
+  }
 }
 
 function buildNoteHTML(p) {
@@ -2585,6 +2645,52 @@ function renderRecentChapters() {
 document.getElementById("ch-text").addEventListener("click", function(e) {
   if (_vaOpen && e.target === this) closeVA();
 });
+
+// ── Swipe-to-dismiss for #va (verse actions) ──
+(function() {
+  var va = document.getElementById("va");
+  if (!va) return;
+  var startY = 0, currentY = 0, dragging = false;
+  
+  va.addEventListener("touchstart", function(e) {
+    // allow drag from anywhere on sheet EXCEPT scrollable slider area
+    var target = e.target;
+    var inSlider = document.getElementById("va-slider-wrap");
+    if (inSlider && inSlider.contains(target)) return;
+    startY = e.touches[0].clientY;
+    currentY = 0;
+    dragging = true;
+    va.style.transition = "none";
+  }, {passive:true});
+  
+  va.addEventListener("touchmove", function(e) {
+    if (!dragging) return;
+    var dy = e.touches[0].clientY - startY;
+    if (dy < 0) { va.style.transform = ""; return; }
+    currentY = dy;
+    va.style.transform = "translateY(" + dy + "px)";
+  }, {passive:true});
+  
+  va.addEventListener("touchend", function() {
+    if (!dragging) return;
+    dragging = false;
+    va.style.transition = "";
+    if (currentY > 80) {
+      va.style.transform = "translateY(100%)";
+      setTimeout(function() {
+        va.style.transform = "";
+        closeVA();
+      }, 220);
+    } else {
+      va.style.transform = "";
+    }
+  }, {passive:true});
+  va.addEventListener("touchcancel", function() {
+    dragging = false;
+    va.style.transition = "";
+    va.style.transform = "";
+  }, {passive:true});
+})();
 (function() {
   var SHEETS = [
     { ovId: "ov-book",  closeId: "ov-book"  },
