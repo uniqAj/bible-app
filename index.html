@@ -160,9 +160,11 @@
     .screen.with-tabs.bar-hidden { top: var(--safe-top); }
 
     /* ── READER SCREEN ── */
-    #screen-bible { 
+    #screen-bible {
       padding: 20px 20px calc(var(--tab-h) + var(--safe-bot) + 30px);
-      overscroll-behavior: contain;
+      /* Extra bottom padding so last line sits ~30% above screen bottom */
+      padding-bottom: calc(var(--tab-h) + var(--safe-bot) + 30vh);
+      overscroll-behavior: none;
     }
     #loading-msg {
       display: none; text-align: center;
@@ -423,10 +425,15 @@
     .saved-item {
       background: var(--bg3); border-radius: 10px;
       padding: 12px 14px; margin-bottom: 10px;
-      position: relative;
+      position: relative; display: flex; gap: 10px; align-items: stretch;
     }
+    .saved-item-body { flex: 1; min-width: 0; }
     .saved-ref { color: var(--gold); font-size: 13px; font-weight: 700; margin-bottom: 4px; }
     .saved-text { font-family: 'PT Serif', Georgia, serif; font-size: 16px; line-height: 1.5; }
+    .saved-hl-bar {
+      width: 3px; border-radius: 2px; flex-shrink: 0;
+      align-self: stretch; min-height: 100%;
+    }
     .saved-del {
       position: absolute; top: 10px; right: 10px;
       background: none; border: none; color: var(--text2);
@@ -1167,7 +1174,7 @@ var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
 // TABS_R[i] = { bi, ch, tr, scroll? }
 var TABS_R = [];
 var ACTIVE_TAB = 0;
-var MAX_TABS = 3;
+var MAX_TABS = 4;
 
 // ── Load persisted state ──
 (function() {
@@ -1370,7 +1377,7 @@ function renderTabsBar() {
 
 function newReadingTab() {
   if (TABS_R.length >= MAX_TABS) {
-    showToast("\u041c\u0430\u043a\u0441\u0438\u043c\u0443\u043c 3 \u0432\u043a\u043b\u0430\u0434\u043a\u0438");
+    showToast("\u041c\u0430\u043a\u0441\u0438\u043c\u0443\u043c 4 \u0432\u043a\u043b\u0430\u0434\u043a\u0438");
     return;
   }
   // Save current state to old active tab first
@@ -1533,6 +1540,23 @@ function goNext() {
       if (dx < 0) goNext(); else goPrev();
     }
   }, {passive:true});
+})();
+
+// ── Block iOS rubber-band bounce at top/bottom of reader ──
+(function() {
+  var el = document.getElementById("screen-bible");
+  var startY = 0;
+  el.addEventListener("touchstart", function(e) {
+    startY = e.touches[0].clientY;
+  }, {passive: true});
+  el.addEventListener("touchmove", function(e) {
+    var dy = e.touches[0].clientY - startY;
+    var atTop = el.scrollTop <= 0;
+    var atBot = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    if ((atTop && dy > 0) || (atBot && dy < 0)) {
+      e.preventDefault();
+    }
+  }, {passive: false});
 })();
 
 // ── Mark read on scroll to bottom ──
@@ -1947,12 +1971,49 @@ function hlVerse(hex) {
     if (!el) continue;
     applyHLStyle(el, hex);
     HL[hlKey(S.bi, S.ch, vn)] = hex;
+    // Auto-save to bookmarks
+    autoSaveHL(S.bi, S.ch, vn, hex);
   }
   persistHL();
-  // Update dot states - dots have data-hex
   var dots = document.querySelectorAll(".hl-dot");
   for (var d = 0; d < dots.length; d++) {
     dots[d].classList.toggle("on", dots[d].getAttribute("data-hex") === hex);
+  }
+}
+
+function autoSaveHL(bi, ch, vn, hex) {
+  // Build ref and text for this verse
+  var ref = bkName(bi) + " " + ch + ":" + vn;
+  // Get text from DOM or cache
+  var el = document.querySelector('[data-v="' + vn + '"]');
+  var txt = "";
+  if (el) {
+    var clone = el.cloneNode(true);
+    var sups = clone.querySelectorAll("sup");
+    for (var i = 0; i < sups.length; i++) sups[i].remove();
+    txt = (clone.textContent || "").trim();
+  }
+  if (!txt) return;
+  // Update existing or insert
+  for (var j = 0; j < SAVED.length; j++) {
+    if (SAVED[j].ref === ref) {
+      SAVED[j].hl = hex; // update color
+      persistSV();
+      return;
+    }
+  }
+  SAVED.unshift({ ref: ref, text: txt, hl: hex });
+  persistSV();
+}
+
+function autoRemoveHL(bi, ch, vn) {
+  var ref = bkName(bi) + " " + ch + ":" + vn;
+  for (var j = 0; j < SAVED.length; j++) {
+    if (SAVED[j].ref === ref && SAVED[j].hl) {
+      SAVED.splice(j, 1);
+      persistSV();
+      return;
+    }
   }
 }
 
@@ -1964,6 +2025,7 @@ function clrHL() {
     if (!el) continue;
     removeHLStyle(el);
     delete HL[hlKey(S.bi, S.ch, vn)];
+    autoRemoveHL(S.bi, S.ch, vn);
   }
   persistHL();
   var dots = document.querySelectorAll(".hl-dot");
@@ -2044,9 +2106,13 @@ function renderSaved() {
   var html = "";
   for (var i = 0; i < SAVED.length; i++) {
     var s = SAVED[i];
+    var bar = s.hl ? '<div class="saved-hl-bar" style="background:' + s.hl + '"></div>' : '';
     html += '<div class="saved-item">' +
+            bar +
+            '<div class="saved-item-body">' +
             '<div class="saved-ref">' + esc(s.ref) + '</div>' +
             '<div class="saved-text">' + esc(s.text) + '</div>' +
+            '</div>' +
             '<button class="saved-del" onclick="delSaved(' + i + ')">&#x00D7;</button>' +
             '</div>';
   }
