@@ -38,6 +38,14 @@
     html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; }
 
     /* ── TOP BAR ── */
+    #top-bar.bar-hidden { 
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    [data-theme="light"] #top-bar {
+      background: rgba(255,255,255,0.78);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
     #top-bar {
       position: fixed; top: 0; left: 0; right: 0;
       height: calc(var(--bar-h) + var(--safe-top));
@@ -48,13 +56,9 @@
       border-bottom: 1px solid rgba(255,255,255,0.06);
       display: flex; align-items: center; padding-left: 10px; padding-right: 6px;
       z-index: 100; gap: 6px;
-      transform: translateY(0);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-    #top-bar.bar-hidden { transform: translateY(-100%); }
-    [data-theme="light"] #top-bar {
-      background: rgba(255,255,255,0.78);
-      border-bottom: 1px solid rgba(0,0,0,0.08);
+      transform: translateY(0); opacity: 1;
+      transition: transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94),
+                  opacity 0.35s ease;
     }
     #ch-progress {
       position: absolute; bottom: -1px; left: 0;
@@ -85,6 +89,12 @@
     .tib svg { width: 22px; height: 22px; }
 
     /* ── READING TABS BAR ── */
+    #tabs-bar.bar-hidden { 
+      transform: translateY(calc(-100% - var(--bar-h) - var(--safe-top)));
+      opacity: 0;
+    }
+    #tabs-bar::-webkit-scrollbar { display: none; }
+    #tabs-bar.show { display: flex; align-items: center; }
     #tabs-bar {
       position: fixed;
       top: calc(var(--bar-h) + var(--safe-top));
@@ -96,14 +106,12 @@
       border-bottom: 1px solid rgba(255,255,255,0.06);
       z-index: 99;
       display: none;
-      overflow-x: auto;
-      overflow-y: hidden;
+      overflow-x: auto; overflow-y: hidden;
       scrollbar-width: none;
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      transform: translateY(0); opacity: 1;
+      transition: transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94),
+                  opacity 0.35s ease;
     }
-    #tabs-bar::-webkit-scrollbar { display: none; }
-    #tabs-bar.show { display: flex; align-items: center; }
-    #tabs-bar.bar-hidden { transform: translateY(calc(-100% - var(--bar-h) - var(--safe-top))); }
     [data-theme="light"] #tabs-bar {
       background: rgba(255,255,255,0.78);
       border-bottom: 1px solid rgba(0,0,0,0.08);
@@ -161,8 +169,7 @@
 
     /* ── READER SCREEN ── */
     #screen-bible {
-      padding: 20px 20px calc(var(--tab-h) + var(--safe-bot) + 30px);
-      /* Extra bottom padding so last line sits ~30% above screen bottom */
+      padding: 20px 20px 0;
       padding-bottom: calc(var(--tab-h) + var(--safe-bot) + 30vh);
       overscroll-behavior: none;
     }
@@ -332,6 +339,7 @@
     .screen.font-shift { top: calc(var(--bar-h) + var(--safe-top) + 96px); }
     .screen.font-shift.bar-hidden { top: var(--safe-top); }
     .screen.with-tabs.font-shift { top: calc(var(--bar-h) + var(--safe-top) + 36px + 96px); }
+    .screen.with-tabs.font-shift.bar-hidden { top: var(--safe-top); }
     #font-size-row { display: flex; align-items: center; gap: 12px; }
     #font-bar span { color: var(--text2); font-size: 13px; min-width: 70px; }
     #font-range { flex: 1; accent-color: var(--gold); }
@@ -442,6 +450,15 @@
     #saved-empty { color: var(--text2); text-align: center; padding: 60px 20px; font-size: 15px; }
 
     /* ── BOTTOM NAV ── */
+    #bot-nav.nav-hidden {
+      transform: translateY(calc(100% + 20px));
+      opacity: 0;
+    }
+    [data-theme="light"] #bot-nav {
+      background: rgba(245,245,245,0.85);
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    }
     #bot-nav {
       position: fixed;
       bottom: calc(var(--safe-bot) + 10px);
@@ -454,17 +471,9 @@
       border-radius: 999px;
       display: flex; z-index: 100;
       box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1),
-                  opacity 0.3s ease;
-    }
-    [data-theme="light"] #bot-nav {
-      background: rgba(245,245,245,0.85);
-      border: 1px solid rgba(0,0,0,0.08);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
-    }
-    #bot-nav.nav-hidden {
-      transform: translateY(calc(100% + 20px));
-      opacity: 0;
+      transform: translateY(0); opacity: 1;
+      transition: transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94),
+                  opacity 0.35s ease;
     }
     .nav-tab {
       flex: 1; display: flex; flex-direction: column;
@@ -1010,7 +1019,7 @@
     <div id="gn-body">
       <div id="gn-loading"></div>
     </div>
-    <div id="gn-src">\u041d\u043e\u0432\u0430\u044f \u0416\u0435\u043d\u0435\u0432\u0441\u043a\u0430\u044f \u0423\u0447\u0435\u0431\u043d\u0430\u044f \u0411\u0438\u0431\u043b\u0438\u044f &nbsp;&bull;&nbsp; bible.by</div>
+    <div id="gn-src">Новая Женевская Учебная Библия &nbsp;&bull;&nbsp; bible.by</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -1560,14 +1569,20 @@ function goNext() {
 })();
 
 // ── Mark read on scroll to bottom ──
-// ── + smart hide/show top bar & bottom nav ──
+// ── + smooth hide/show top bar & bottom nav ──
 (function() {
   var el = document.getElementById("screen-bible");
   var topBar = document.getElementById("top-bar");
   var botNav = document.getElementById("bot-nav");
   var lastY = 0;
   var ticking = false;
-  var THRESHOLD = 6; // px minimum to react
+
+  // Accumulated scroll counters for smooth threshold
+  var downAccum = 0;   // px scrolled down since last direction change
+  var upAccum = 0;     // px scrolled up since last direction change
+  var HIDE_AFTER = 55; // px of downscroll needed to hide
+  var SHOW_AFTER = 25; // px of upscroll needed to show
+  var _barsHidden = false;
 
   var _markedThisVisit = "";
   el.addEventListener("scroll", function() {
@@ -1587,29 +1602,39 @@ function goNext() {
     var pb = document.getElementById("ch-progress");
     if (pb) pb.style.width = pct + "%";
 
-    // hide/show bars
+    // smooth hide/show bars
     if (!ticking) {
       ticking = true;
       requestAnimationFrame(function() {
         var y = el.scrollTop;
         var dy = y - lastY;
-        if (Math.abs(dy) > THRESHOLD) {
-          var tbar = document.getElementById("tabs-bar");
-          if (dy > 0 && y > 60) {
-            // scrolling DOWN — hide
+        lastY = y;
+        var tbar = document.getElementById("tabs-bar");
+
+        if (dy > 0 && y > 80) {
+          // scrolling DOWN
+          downAccum += dy;
+          upAccum = 0;
+          if (!_barsHidden && downAccum >= HIDE_AFTER) {
+            _barsHidden = true;
             topBar.classList.add("bar-hidden");
             botNav.classList.add("nav-hidden");
             el.classList.add("bar-hidden");
             if (tbar) tbar.classList.add("bar-hidden");
-          } else {
-            // scrolling UP — show
+          }
+        } else if (dy < 0) {
+          // scrolling UP
+          upAccum += (-dy);
+          downAccum = 0;
+          if (_barsHidden && upAccum >= SHOW_AFTER) {
+            _barsHidden = false;
             topBar.classList.remove("bar-hidden");
             botNav.classList.remove("nav-hidden");
             el.classList.remove("bar-hidden");
             if (tbar) tbar.classList.remove("bar-hidden");
           }
-          lastY = y;
         }
+
         ticking = false;
       });
     }
@@ -1981,10 +2006,13 @@ function hlVerse(hex) {
   }
 }
 
+function hlRef(bi, ch, vn) {
+  // always use Russian name for stable cross-translation refs
+  return BOOKS[bi][0] + " " + ch + ":" + vn;
+}
+
 function autoSaveHL(bi, ch, vn, hex) {
-  // Build ref and text for this verse
-  var ref = bkName(bi) + " " + ch + ":" + vn;
-  // Get text from DOM or cache
+  var ref = hlRef(bi, ch, vn);
   var el = document.querySelector('[data-v="' + vn + '"]');
   var txt = "";
   if (el) {
@@ -1994,10 +2022,9 @@ function autoSaveHL(bi, ch, vn, hex) {
     txt = (clone.textContent || "").trim();
   }
   if (!txt) return;
-  // Update existing or insert
   for (var j = 0; j < SAVED.length; j++) {
     if (SAVED[j].ref === ref) {
-      SAVED[j].hl = hex; // update color
+      SAVED[j].hl = hex;
       persistSV();
       return;
     }
@@ -2007,7 +2034,7 @@ function autoSaveHL(bi, ch, vn, hex) {
 }
 
 function autoRemoveHL(bi, ch, vn) {
-  var ref = bkName(bi) + " " + ch + ":" + vn;
+  var ref = hlRef(bi, ch, vn);
   for (var j = 0; j < SAVED.length; j++) {
     if (SAVED[j].ref === ref && SAVED[j].hl) {
       SAVED.splice(j, 1);
@@ -2071,10 +2098,10 @@ function shareVerse() {
   var txt = getVerseText() + " \u2014 " + getVerseRef();
   if (navigator.share) {
     navigator.share({ text: txt }).catch(function() {});
+    closeVA();
   } else {
-    copyVerse(); return;
+    copyVerse(); // copyVerse calls closeVA() internally
   }
-  closeVA();
 }
 function saveVerse() {
   var ref = getVerseRef();
@@ -2226,6 +2253,7 @@ async function loadGenevaNotes(bi, ch) {
     if (c) {
       _gNotes = JSON.parse(c); _gLoaded = true;
       refreshGenevaButton();
+      updateGenevaStatus();
       return;
     }
   } catch(e) {}
@@ -2661,11 +2689,11 @@ function getRecentChapters(n) {
   return entries;
 }
 function formatShortDate(ds) {
-  var parts = ds.split("-");
-  var d2 = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
   if (ds === getToday()) return "\u0421\u0435\u0433\u043e\u0434\u043d\u044f";
   var yest = new Date(); yest.setDate(yest.getDate()-1);
   if (ds === dateStr(yest)) return "\u0412\u0447\u0435\u0440\u0430";
+  var parts = ds.split("-");
+  var d2 = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
   return d2.getDate() + " " + MONTHS_RU[d2.getMonth()];
 }
 function renderRecentChapters() {
@@ -2727,7 +2755,7 @@ document.getElementById("ch-text").addEventListener("click", function(e) {
     currentY = 0;
     dragging = true;
     va.style.transition = "none";
-  }, {passive:true});
+  }, {passive: false});
   
   va.addEventListener("touchmove", function(e) {
     if (!dragging) return;
@@ -2735,7 +2763,7 @@ document.getElementById("ch-text").addEventListener("click", function(e) {
     if (dy < 0) { va.style.transform = ""; return; }
     currentY = dy;
     va.style.transform = "translateY(" + dy + "px)";
-  }, {passive:true});
+  }, {passive: false});
   
   va.addEventListener("touchend", function() {
     if (!dragging) return;
