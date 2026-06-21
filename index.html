@@ -56,9 +56,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.06);
       display: flex; align-items: center; padding-left: 10px; padding-right: 6px;
       z-index: 100; gap: 6px;
-      transform: translateY(0); opacity: 1;
-      transition: transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94),
-                  opacity 0.35s ease;
+      will-change: transform, opacity;
     }
     #ch-progress {
       position: absolute; bottom: -1px; left: 0;
@@ -98,19 +96,14 @@
     #tabs-bar {
       position: fixed;
       top: calc(var(--bar-h) + var(--safe-top));
-      left: 0; right: 0;
-      height: 36px;
+      left: 0; right: 0; height: 36px;
       background: rgba(0,0,0,0.72);
       -webkit-backdrop-filter: blur(18px) saturate(180%);
       backdrop-filter: blur(18px) saturate(180%);
       border-bottom: 1px solid rgba(255,255,255,0.06);
-      z-index: 99;
-      display: none;
-      overflow-x: auto; overflow-y: hidden;
-      scrollbar-width: none;
-      transform: translateY(0); opacity: 1;
-      transition: transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94),
-                  opacity 0.35s ease;
+      z-index: 99; display: none;
+      overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+      will-change: transform, opacity;
     }
     [data-theme="light"] #tabs-bar {
       background: rgba(255,255,255,0.78);
@@ -420,6 +413,13 @@
       font-weight: 700; cursor: pointer;
     }
     #search-hint { color: var(--text2); font-size: 14px; text-align: center; padding: 40px 20px; }
+    .s-section {
+      font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+      color: var(--text2); text-transform: uppercase;
+      padding: 14px 0 6px; margin-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .s-section:first-child { padding-top: 4px; }
     .s-result {
       background: var(--bg3); border-radius: 10px;
       padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
@@ -427,6 +427,29 @@
     .s-result-ref { color: var(--gold); font-size: 13px; font-weight: 700; margin-bottom: 4px; }
     .s-result-text { font-family: 'PT Serif', Georgia, serif; font-size: 16px; line-height: 1.5; }
     .s-result-text em { background: rgba(201,168,76,0.3); font-style: normal; border-radius: 2px; }
+
+    /* ── TRANSLATION COMPARE MODAL ── */
+    #tr-cmp-ov { z-index: 310; }
+    #tr-cmp-sheet { max-height: 85vh; }
+    #tr-cmp-title {
+      font-size: 15px; font-weight: 700; color: var(--gold);
+      text-align: center; padding: 4px 16px 10px; flex-shrink: 0;
+    }
+    #tr-cmp-body { padding: 0 16px 8px; overflow-y: auto; }
+    .tr-cmp-item {
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .tr-cmp-item:last-child { border-bottom: none; }
+    .tr-cmp-code {
+      font-size: 11px; font-weight: 800; letter-spacing: 1px;
+      color: var(--gold); text-transform: uppercase; margin-bottom: 6px;
+    }
+    .tr-cmp-name { font-weight: 400; color: var(--text2); letter-spacing: 0; }
+    .tr-cmp-text {
+      font-family: 'PT Serif', Georgia, serif;
+      font-size: 17px; line-height: 1.7; color: var(--text);
+    }
+    .tr-cmp-loading { color: var(--text2); font-size: 14px; text-align: center; padding: 24px; }
 
     /* ── SAVED SCREEN ── */
     #screen-saved { padding: 16px 16px calc(var(--tab-h) + var(--safe-bot) + 30px); }
@@ -462,18 +485,14 @@
     #bot-nav {
       position: fixed;
       bottom: calc(var(--safe-bot) + 10px);
-      left: 12px; right: 12px;
-      height: var(--tab-h);
+      left: 12px; right: 12px; height: var(--tab-h);
       background: rgba(28,28,28,0.78);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 999px;
-      display: flex; z-index: 100;
+      border-radius: 999px; display: flex; z-index: 100;
       box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-      transform: translateY(0); opacity: 1;
-      transition: transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94),
-                  opacity 0.35s ease;
+      will-change: transform, opacity;
     }
     .nav-tab {
       flex: 1; display: flex; flex-direction: column;
@@ -868,7 +887,7 @@
     <input id="search-input" type="search" placeholder="Поиск по тексту..." autocomplete="off" autocorrect="off" spellcheck="false">
     <button id="search-go" onclick="doSearch()">Найти</button>
   </div>
-  <div id="search-hint">Введите слово для поиска по загруженным главам</div>
+  <div id="search-hint">\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043b\u043e\u0432\u043e \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430 \u043f\u043e \u0432\u0441\u0435\u0439 \u0411\u0438\u0431\u043b\u0438\u0438</div>
   <div id="search-results"></div>
 </div>
 
@@ -905,7 +924,7 @@
   </div>
 </div>
 <div id="bot-nav">
-  <button class="nav-tab" onclick="showTab('bible')" id="tab-bible" style="color:var(--text)">
+  <button class="nav-tab on" onclick="showTab('bible')" id="tab-bible">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
     Библия
   </button>
@@ -985,6 +1004,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
             Поделиться
           </button>
+          <button class="va-btn" onclick="compareTranslations()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3h14M5 21h14M12 3v18M5 8h6M5 12h6M5 16h6"/></svg>
+            \u041f\u0435\u0440\u0435\u0432\u043e\u0434\u044b
+          </button>
           <button class="va-btn" id="va-gn-btn" onclick="openGenevaNote()" style="display:none">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
             Комментарий
@@ -1006,6 +1029,15 @@
   <div id="va-page-dots">
     <div class="va-dot on" id="va-dot-0"></div>
     <div class="va-dot" id="va-dot-1"></div>
+  </div>
+</div>
+
+<!-- Translation compare modal -->
+<div id="tr-cmp-ov" class="ov" onclick="if(event.target===this)closeTrCmp()">
+  <div id="tr-cmp-sheet" class="sheet">
+    <div class="handle"></div>
+    <div id="tr-cmp-title"></div>
+    <div id="tr-cmp-body" class="sh-scroll"></div>
   </div>
 </div>
 
@@ -1183,7 +1215,7 @@ var DAILY = {}; // reading log: "YYYY-MM-DD" → ["bi_ch", ...]
 // TABS_R[i] = { bi, ch, tr, scroll? }
 var TABS_R = [];
 var ACTIVE_TAB = 0;
-var MAX_TABS = 4;
+var MAX_TABS = 10;
 
 // ── Load persisted state ──
 (function() {
@@ -1386,7 +1418,7 @@ function renderTabsBar() {
 
 function newReadingTab() {
   if (TABS_R.length >= MAX_TABS) {
-    showToast("\u041c\u0430\u043a\u0441\u0438\u043c\u0443\u043c 4 \u0432\u043a\u043b\u0430\u0434\u043a\u0438");
+    showToast("\u041c\u0430\u043a\u0441\u0438\u043c\u0443\u043c 10 \u0432\u043a\u043b\u0430\u0434\u043e\u043a");
     return;
   }
   // Save current state to old active tab first
@@ -1436,6 +1468,12 @@ async function loadChapter() {
   if (_loading) return;
   _loading = true;
   closeVA();
+  // close font bar if open
+  if (_fontOpen) {
+    _fontOpen = false;
+    document.getElementById("font-bar").classList.remove("open", "with-tabs");
+    document.getElementById("screen-bible").classList.remove("font-shift");
+  }
   syncTabFromState();
   renderTabsBar();
   persist();
@@ -1443,7 +1481,7 @@ async function loadChapter() {
   // reset bar visibility on chapter change
   document.getElementById("top-bar").classList.remove("bar-hidden");
   document.getElementById("bot-nav").classList.remove("nav-hidden");
-  document.getElementById("screen-bible").classList.remove("bar-hidden");
+  _resetBars();
   var tb2 = document.getElementById("tabs-bar");
   if (tb2) tb2.classList.remove("bar-hidden");
 
@@ -1568,71 +1606,127 @@ function goNext() {
   }, {passive: false});
 })();
 
-// ── Mark read on scroll to bottom ──
-// ── + smooth hide/show top bar & bottom nav ──
-(function() {
-  var el = document.getElementById("screen-bible");
+// ── Proportional bar hide/show (follows finger speed) ──
+var _barP = 0;          // 0 = shown, 1 = hidden
+var _barSnapT = null;   // snap timer
+var _barTopH = 0;       // cached top-bar height px
+var _barBotH = 0;       // cached bot-nav slide distance px
+var SLIDE_PX = 58;      // scroll px needed to fully hide
+
+function _cacheBarH() {
+  var tb = document.getElementById("top-bar");
+  var bn = document.getElementById("bot-nav");
+  if (tb && tb.offsetHeight > 0) _barTopH = tb.offsetHeight;
+  if (bn && bn.offsetHeight > 0) _barBotH = bn.offsetHeight + 20;
+}
+
+function _applyBarP(p, snap) {
   var topBar = document.getElementById("top-bar");
   var botNav = document.getElementById("bot-nav");
+  var tbar   = document.getElementById("tabs-bar");
+  var screen = document.getElementById("screen-bible");
+  var T = snap ? "transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94),opacity 0.22s ease" : "none";
+
+  topBar.style.transition = T;
+  botNav.style.transition = T;
+  if (tbar) tbar.style.transition = T;
+
+  if (p <= 0) {
+    topBar.style.transform = ""; topBar.style.opacity = "";
+    botNav.style.transform = ""; botNav.style.opacity = "";
+    if (tbar) { tbar.style.transform = ""; tbar.style.opacity = ""; }
+  } else {
+    topBar.style.transform = "translateY(" + (-_barTopH * p).toFixed(1) + "px)";
+    topBar.style.opacity   = (1 - p * 0.88).toFixed(3);
+    botNav.style.transform = "translateY(" + (_barBotH  * p).toFixed(1) + "px)";
+    botNav.style.opacity   = (1 - p * 0.88).toFixed(3);
+    if (tbar && tbar.classList.contains("show")) {
+      tbar.style.transform = "translateY(" + (-_barTopH * p).toFixed(1) + "px)";
+      tbar.style.opacity   = (1 - p * 0.88).toFixed(3);
+    }
+  }
+
+  // screen-bible top — switch class at half-way, no transition
+  var hide = p > 0.5;
+  if (hide !== screen.classList.contains("bar-hidden")) {
+    screen.style.transition = "none";
+    screen.classList.toggle("bar-hidden", hide);
+    void screen.offsetHeight; // force reflow
+    screen.style.transition = "";
+  }
+}
+
+function _snapBars(target) {
+  _barP = target;
+  _applyBarP(target, true);
+  // clear inline transition after snap completes
+  setTimeout(function() {
+    var topBar = document.getElementById("top-bar");
+    var botNav = document.getElementById("bot-nav");
+    var tbar   = document.getElementById("tabs-bar");
+    topBar.style.transition = "";
+    botNav.style.transition = "";
+    if (tbar) tbar.style.transition = "";
+  }, 300);
+}
+
+function _resetBars() {
+  _barP = 0;
+  var topBar = document.getElementById("top-bar");
+  var botNav = document.getElementById("bot-nav");
+  var tbar   = document.getElementById("tabs-bar");
+  var screen = document.getElementById("screen-bible");
+  topBar.style.transition = ""; topBar.style.transform = ""; topBar.style.opacity = "";
+  botNav.style.transition = ""; botNav.style.transform = ""; botNav.style.opacity = "";
+  if (tbar) { tbar.style.transition = ""; tbar.style.transform = ""; tbar.style.opacity = ""; }
+  screen.classList.remove("bar-hidden");
+}
+
+// ── Mark read on scroll to bottom ──
+// ── + proportional hide/show top bar & bottom nav ──
+(function() {
+  var el = document.getElementById("screen-bible");
   var lastY = 0;
   var ticking = false;
-
-  // Accumulated scroll counters for smooth threshold
-  var downAccum = 0;   // px scrolled down since last direction change
-  var upAccum = 0;     // px scrolled up since last direction change
-  var HIDE_AFTER = 55; // px of downscroll needed to hide
-  var SHOW_AFTER = 25; // px of upscroll needed to show
-  var _barsHidden = false;
-
   var _markedThisVisit = "";
+
   el.addEventListener("scroll", function() {
     // mark read (only once per chapter visit)
     var visitKey = S.bi + "_" + S.ch;
     if (_markedThisVisit !== visitKey) {
       var remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
-      if (remaining <= 60) {
+      if (remaining <= el.clientHeight * 0.40) {
         markRead(S.bi, S.ch);
         _markedThisVisit = visitKey;
       }
     }
 
-    // update chapter progress bar
+    // progress bar
     var max = el.scrollHeight - el.clientHeight;
     var pct = max > 0 ? Math.min(100, (el.scrollTop / max) * 100) : 0;
     var pb = document.getElementById("ch-progress");
     if (pb) pb.style.width = pct + "%";
 
-    // smooth hide/show bars
+    // proportional bar movement
     if (!ticking) {
       ticking = true;
       requestAnimationFrame(function() {
+        if (!_barTopH) _cacheBarH();
         var y = el.scrollTop;
         var dy = y - lastY;
         lastY = y;
-        var tbar = document.getElementById("tabs-bar");
 
-        if (dy > 0 && y > 80) {
-          // scrolling DOWN
-          downAccum += dy;
-          upAccum = 0;
-          if (!_barsHidden && downAccum >= HIDE_AFTER) {
-            _barsHidden = true;
-            topBar.classList.add("bar-hidden");
-            botNav.classList.add("nav-hidden");
-            el.classList.add("bar-hidden");
-            if (tbar) tbar.classList.add("bar-hidden");
-          }
-        } else if (dy < 0) {
-          // scrolling UP
-          upAccum += (-dy);
-          downAccum = 0;
-          if (_barsHidden && upAccum >= SHOW_AFTER) {
-            _barsHidden = false;
-            topBar.classList.remove("bar-hidden");
-            botNav.classList.remove("nav-hidden");
-            el.classList.remove("bar-hidden");
-            if (tbar) tbar.classList.remove("bar-hidden");
-          }
+        if (y < 60) {
+          // near top — always show
+          if (_barP > 0) _snapBars(0);
+        } else {
+          _barP = Math.max(0, Math.min(1, _barP + dy / SLIDE_PX));
+          _applyBarP(_barP, false);
+
+          clearTimeout(_barSnapT);
+          _barSnapT = setTimeout(function() {
+            _snapBars(_barP > 0.35 ? 1 : 0);
+          }, 120);
         }
 
         ticking = false;
@@ -2146,8 +2240,34 @@ function renderSaved() {
   list.innerHTML = html;
 }
 function delSaved(i) {
+  var item = SAVED[i];
   SAVED.splice(i, 1);
   persistSV();
+  // if this was an auto-HL entry, remove the actual highlight too
+  if (item && item.hl) {
+    // parse ref to find bi/ch/vn (format: "BookName ch:vn")
+    var m = item.ref.match(/^(.+)\s+(\d+):(\d+)$/);
+    if (m) {
+      var ch3 = parseInt(m[2], 10), vn3 = parseInt(m[3], 10);
+      // find bi by Russian book name
+      var bi3 = -1;
+      for (var b = 0; b < BOOKS.length; b++) {
+        if (BOOKS[b][0] === m[1]) { bi3 = b; break; }
+      }
+      if (bi3 >= 0) {
+        var hk = hlKey(bi3, ch3, vn3);
+        if (HL[hk]) {
+          delete HL[hk];
+          persistHL();
+          // update DOM if same chapter is showing
+          if (bi3 === S.bi && ch3 === S.ch) {
+            var verseEl = document.querySelector('[data-v="' + vn3 + '"]');
+            if (verseEl) removeHLStyle(verseEl);
+          }
+        }
+      }
+    }
+  }
   renderSaved();
 }
 
@@ -2155,69 +2275,107 @@ function delSaved(i) {
 // SEARCH SCREEN
 // ═══════════════════════════════════════════════
 function openSearch() { showTab("search"); }
-function doSearch() {
-  var q = document.getElementById("search-input").value.trim().toLowerCase();
-  if (q.length < 2) { return; }
+async function doSearch() {
+  var raw = document.getElementById("search-input").value.trim();
+  var q = raw.toLowerCase();
   var hint = document.getElementById("search-hint");
   var results = document.getElementById("search-results");
-  hint.textContent = "\u041f\u043e\u0438\u0441\u043a \u0432 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043d\u044b\u0445 \u0433\u043b\u0430\u0432\u0430\u0445...";
+
+  if (q.length < 2) {
+    hint.textContent = "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043c\u0438\u043d\u0438\u043c\u0443\u043c 2 \u0441\u0438\u043c\u0432\u043e\u043b\u0430 \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430";
+    results.innerHTML = "";
+    return;
+  }
+
+  hint.textContent = "\u041f\u043e\u0438\u0441\u043a...";
   results.innerHTML = "";
-  // Search all cached chapters
-  var found = [];
-  var keys = [];
+
   try {
-    for (var k = 0; k < localStorage.length; k++) {
-      var key = localStorage.key(k);
-      if (key && key.indexOf("bbl_c_") === 0) keys.push(key);
+    var url = "https://bolls.life/search/" + S.tr + "/" + encodeURIComponent(raw) + "/";
+    var resp = await fetch(url);
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    var data = await resp.json();
+
+    if (!data || !data.length) {
+      hint.textContent = "\u041d\u0435\u0442 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0432";
+      return;
     }
-  } catch(e) {}
-  for (var ki = 0; ki < keys.length; ki++) {
-    try {
-      var raw = localStorage.getItem(keys[ki]);
-      if (!raw) continue;
-      var verses = JSON.parse(raw);
-      // parse key: bbl_c_{tr}_{bi}_{ch}
-      var parts = keys[ki].split("_");
-      var tr2 = parts[2];
-      var bi2 = parseInt(parts[3], 10);
-      var ch2 = parseInt(parts[4], 10);
-      if (isNaN(bi2) || isNaN(ch2)) continue;
-      if (tr2 !== S.tr) continue;
-      for (var vi = 0; vi < verses.length; vi++) {
-        var vt = (verses[vi].text || "")
+
+    // Split into OT and NT, cap at 120 total
+    var ot = [], nt = [];
+    for (var i = 0; i < data.length && (ot.length + nt.length) < 120; i++) {
+      var item = data[i];
+      var bi2 = item.book - 1; // 0-based
+      if (bi2 < 0 || bi2 >= BOOKS.length) continue;
+      if (bi2 <= OT_END) ot.push(item); else nt.push(item);
+    }
+
+    var re = new RegExp("(" + raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+
+    function renderSection(items, label) {
+      if (!items.length) return "";
+      var h = '<div class="s-section">' + label + ' \u2013 ' + items.length + ' \u0440\u0435\u0437.</div>';
+      for (var j = 0; j < items.length; j++) {
+        var f = items[j];
+        var bi3 = f.book - 1;
+        var ref = bkName(bi3) + " " + f.chapter + ":" + f.verse;
+        var txt = (f.text || "")
           .replace(/<br\s*\/?>/gi, " ")
           .replace(/<\/?[a-z][^>]*>/gi, "")
-          .toLowerCase();
-        if (vt.indexOf(q) !== -1) {
-          found.push({
-            bi: bi2, ch: ch2,
-            vn: verses[vi].verse,
-            text: (verses[vi].text || "")
-              .replace(/<br\s*\/?>/gi, " ")
-              .replace(/<\/?[a-z][^>]*>/gi, "")
-          });
-          if (found.length >= 50) { ki = keys.length; break; }
+          .replace(/\s+/g, " ").trim();
+        var hiTxt = esc(txt).replace(re, "<em>$1</em>");
+        h += '<div class="s-result" onclick="goToVerse(' + bi3 + ',' + f.chapter + ',' + f.verse + ')">' +
+             '<div class="s-result-ref">' + esc(ref) + '</div>' +
+             '<div class="s-result-text">' + hiTxt + '</div></div>';
+      }
+      return h;
+    }
+
+    // Show NT first (most searches are NT), then OT
+    results.innerHTML =
+      renderSection(nt, "\u041d\u041e\u0412\u042b\u0419 \u0417\u0410\u0412\u0415\u0422") +
+      renderSection(ot, "\u0412\u0415\u0422\u0425\u0418\u0419 \u0417\u0410\u0412\u0415\u0422");
+
+    var total = nt.length + ot.length;
+    hint.textContent = total >= 120
+      ? "\u041f\u0435\u0440\u0432\u044b\u0435 120 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0432"
+      : "";
+
+  } catch(e) {
+    // Fallback: search cached chapters
+    hint.textContent = "\u041e\u0444\u0444\u043b\u0430\u0439\u043d \u2013 \u043f\u043e\u0438\u0441\u043a \u0432 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043d\u044b\u0445 \u0433\u043b\u0430\u0432\u0430\u0445";
+    var found = [];
+    try {
+      var ckeys = [];
+      for (var k = 0; k < localStorage.length; k++) {
+        var ckey = localStorage.key(k);
+        if (ckey && ckey.indexOf("bbl_c_" + S.tr) === 0) ckeys.push(ckey);
+      }
+      for (var ki = 0; ki < ckeys.length && found.length < 60; ki++) {
+        var craw = localStorage.getItem(ckeys[ki]);
+        if (!craw) continue;
+        var cverses = JSON.parse(craw);
+        var cparts = ckeys[ki].split("_");
+        var cbi = parseInt(cparts[3], 10), cch = parseInt(cparts[4], 10);
+        if (isNaN(cbi) || isNaN(cch)) continue;
+        for (var cvi = 0; cvi < cverses.length; cvi++) {
+          var cvt = (cverses[cvi].text || "")
+            .replace(/<br\s*\/?>/gi, " ").replace(/<\/?[a-z][^>]*>/gi, "").toLowerCase();
+          if (cvt.indexOf(q) !== -1) {
+            found.push({ book: cbi+1, chapter: cch, verse: cverses[cvi].verse, text: cverses[cvi].text || "" });
+          }
         }
       }
     } catch(e2) {}
+    if (!found.length) { hint.textContent = "\u041d\u0435\u0442 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0432"; return; }
+    var re2 = new RegExp("(" + raw.replace(/[.*+?^${}()|[\]\\]/g,"\\$&") + ")", "gi");
+    var fot = found.filter(function(x){return (x.book-1) <= OT_END;});
+    var fnt = found.filter(function(x){return (x.book-1) > OT_END;});
+    results.innerHTML =
+      renderSection(fnt, "\u041d\u041e\u0412\u042b\u0419 \u0417\u0410\u0412\u0415\u0422") +
+      renderSection(fot, "\u0412\u0415\u0422\u0425\u0418\u0419 \u0417\u0410\u0412\u0415\u0422");
+    hint.textContent = "\u041e\u0444\u0444\u043b\u0430\u0439\u043d-\u0440\u0435\u0436\u0438\u043c";
   }
-  if (found.length === 0) {
-    hint.textContent = "\u041d\u0435\u0442 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0432 \u0432 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043d\u044b\u0445 \u0433\u043b\u0430\u0432\u0430\u0445";
-    return;
-  }
-  hint.textContent = "";
-  var re = new RegExp("(" + q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&") + ")", "gi");
-  var html = "";
-  for (var fi = 0; fi < found.length; fi++) {
-    var f = found[fi];
-    var ref = bkName(f.bi) + " " + f.ch + ":" + f.vn;
-    var hiTxt = esc(f.text).replace(re, "<em>$1</em>");
-    html += '<div class="s-result" onclick="goToVerse(' + f.bi + ',' + f.ch + ',' + f.vn + ')">' +
-            '<div class="s-result-ref">' + esc(ref) + '</div>' +
-            '<div class="s-result-text">' + hiTxt + '</div>' +
-            '</div>';
-  }
-  results.innerHTML = html;
 }
 function goToVerse(bi, ch, vn) {
   S.bi = bi; S.ch = ch;
@@ -2397,6 +2555,57 @@ function renderGenevaNote(vn) {
 function closeGN() {
   document.getElementById("gn-ov").classList.remove("open");
   document.body.classList.remove("modal-open");
+}
+
+// ═══════════════════════════════════════════════
+// TRANSLATION COMPARE
+// ═══════════════════════════════════════════════
+function closeTrCmp() {
+  document.getElementById("tr-cmp-ov").classList.remove("open");
+  document.body.classList.remove("modal-open");
+}
+
+async function compareTranslations() {
+  var bi = S.bi, ch = S.ch, vn = S.selN;
+  var ref = bkName(bi) + " " + ch + ":" + vn;
+  document.getElementById("tr-cmp-title").textContent = ref;
+  document.getElementById("tr-cmp-body").innerHTML =
+    '<div class="tr-cmp-loading">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</div>';
+  document.getElementById("tr-cmp-ov").classList.add("open");
+  document.body.classList.add("modal-open");
+  closeVA();
+
+  var html = "";
+  for (var ti = 0; ti < TRANS.length; ti++) {
+    var tr2 = TRANS[ti];
+    var verses2 = getCache(tr2.code, bi, ch);
+    if (!verses2) {
+      try {
+        var url = "https://bolls.life/get-chapter/" + tr2.code + "/" + (bi+1) + "/" + ch + "/";
+        var resp = await fetch(url);
+        verses2 = await resp.json();
+        if (Array.isArray(verses2)) setCache(tr2.code, bi, ch, verses2);
+      } catch(e2) { verses2 = null; }
+    }
+    var txt2 = "";
+    if (verses2 && Array.isArray(verses2)) {
+      for (var vi2 = 0; vi2 < verses2.length; vi2++) {
+        if (verses2[vi2].verse === vn) {
+          txt2 = (verses2[vi2].text || "")
+            .replace(/<br\s*\/?>/gi, " ")
+            .replace(/<\/?[a-z][^>]*>/gi, "")
+            .replace(/\s+/g, " ").trim();
+          break;
+        }
+      }
+    }
+    html += '<div class="tr-cmp-item">' +
+      '<div class="tr-cmp-code">' + esc(tr2.lbl) +
+      ' <span class="tr-cmp-name">' + esc(tr2.name) + '</span></div>' +
+      '<div class="tr-cmp-text">' + (txt2 ? esc(txt2) : "\u2014") + '</div>' +
+      '</div>';
+  }
+  document.getElementById("tr-cmp-body").innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════
@@ -2884,6 +3093,7 @@ applyTheme(S.theme);
 setAlign(S.align);
 applyTypography();
 renderTabsBar();
+_cacheBarH();
 loadChapter();
 </script>
 </body>
